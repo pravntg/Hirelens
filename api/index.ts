@@ -217,7 +217,6 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
 async function extractText(buffer: Buffer, mimeType: string, filename: string): Promise<string> {
   if (mimeType === 'application/pdf' || filename.toLowerCase().endsWith('.pdf')) {
     try {
-      // Dynamic import to avoid Vercel cold-start issues with pdf-parse
       const { default: pdfParse } = await import('pdf-parse');
       const data = await pdfParse(buffer);
       return data.text.replace(/\r\n/g, '\n').replace(/\t/g, ' ').trim();
@@ -238,11 +237,7 @@ const app = express();
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || ALLOWED_ORIGINS.some(o => origin.startsWith(o))) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Allow all origins for now (can restrict later)
-    }
+    callback(null, true); // Allow all origins for API endpoints
   },
   credentials: true
 }));
@@ -257,7 +252,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// DB middleware (non-blocking — don't await)
+// DB middleware (non-blocking)
 app.use((_req: Request, _res: Response, next: NextFunction) => {
   connectDB().catch(() => {});
   next();
@@ -270,15 +265,15 @@ const resumeUpload = upload.fields([
   { name: 'job_description_file', maxCount: 1 }
 ]);
 
-// ─── Routes ──────────────────────────────────────────────────────────────────
+// ─── Routes (Support BOTH /path AND /api/path for Vercel Rewrites) ───────────
 
 // Health check
 app.get(['/health', '/api/health'], (_req: Request, res: Response) => {
   res.json({ status: 'ok', db: dbState, timestamp: new Date().toISOString() });
 });
 
-// POST /api/screen — Resume analysis
-app.post('/screen', resumeUpload, async (req: Request, res: Response) => {
+// POST /screen or /api/screen — Resume analysis
+app.post(['/screen', '/api/screen'], resumeUpload, async (req: Request, res: Response) => {
   try {
     const files = req.files as { [k: string]: Express.Multer.File[] } | undefined;
     const resumeFile = files?.['resume']?.[0];
@@ -342,8 +337,8 @@ app.post('/screen', resumeUpload, async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/candidates
-app.get('/candidates', async (_req: Request, res: Response) => {
+// GET /candidates or /api/candidates
+app.get(['/candidates', '/api/candidates'], async (_req: Request, res: Response) => {
   try {
     if (dbState !== 'connected') return res.json([]);
     const docs = await Candidate.find().sort({ createdAt: -1 }).lean();
@@ -351,16 +346,16 @@ app.get('/candidates', async (_req: Request, res: Response) => {
   } catch { return res.json([]); }
 });
 
-// DELETE /api/candidates/:id
-app.delete('/candidates/:id', async (req: Request, res: Response) => {
+// DELETE /candidates/:id or /api/candidates/:id
+app.delete(['/candidates/:id', '/api/candidates/:id'], async (req: Request, res: Response) => {
   try {
     await Candidate.findByIdAndDelete(req.params.id);
     return res.json({ message: 'Candidate deleted' });
   } catch (e: any) { return res.status(500).json({ error: e.message }); }
 });
 
-// GET /api/jobs
-app.get('/jobs', async (_req: Request, res: Response) => {
+// GET /jobs or /api/jobs
+app.get(['/jobs', '/api/jobs'], async (_req: Request, res: Response) => {
   try {
     if (dbState !== 'connected') return res.json([]);
     const docs = await Job.find().sort({ createdAt: -1 }).lean();
@@ -368,8 +363,8 @@ app.get('/jobs', async (_req: Request, res: Response) => {
   } catch { return res.json([]); }
 });
 
-// POST /api/jobs
-app.post('/jobs', async (req: Request, res: Response) => {
+// POST /jobs or /api/jobs
+app.post(['/jobs', '/api/jobs'], async (req: Request, res: Response) => {
   try {
     const { title, description } = req.body;
     if (!title || !description) return res.status(400).json({ error: 'Title and description required.' });
@@ -379,15 +374,14 @@ app.post('/jobs', async (req: Request, res: Response) => {
   } catch (e: any) { return res.status(500).json({ error: e.message }); }
 });
 
-// POST /api/auth/signup
-app.post('/auth/signup', async (req: Request, res: Response) => {
+// POST /auth/signup or /api/auth/signup
+app.post(['/auth/signup', '/api/auth/signup'], async (req: Request, res: Response) => {
   try {
     const { username, email, password, name } = req.body;
     if (!username || !email || !password || !name) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
     if (dbState !== 'connected') {
-      // Offline signup — return success without saving
       return res.status(201).json({
         message: 'Account created successfully',
         user: { id: Date.now().toString(), username, email, name, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}` }
@@ -408,8 +402,8 @@ app.post('/auth/signup', async (req: Request, res: Response) => {
   } catch (e: any) { return res.status(500).json({ error: e.message }); }
 });
 
-// POST /api/auth/login
-app.post('/auth/login', async (req: Request, res: Response) => {
+// POST /auth/login or /api/auth/login
+app.post(['/auth/login', '/api/auth/login'], async (req: Request, res: Response) => {
   try {
     const { usernameOrEmail, password } = req.body;
     if (!usernameOrEmail || !password) return res.status(400).json({ error: 'Username/email and password required.' });

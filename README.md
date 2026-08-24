@@ -151,13 +151,3 @@ Return ONLY valid JSON.
 | `DELETE` | `/api/candidates/:id` | Deletes a candidate record from MongoDB. |
 | `GET` | `/api/health` | System health check and MongoDB connection status. |
 
-
-
----
-
-## 🎯 Evaluation Criteria Checklist & Focus
-
-- ✅ **Code Quality & Structure**: Clean modular TypeScript codebase, Controller-Service-Model backend layout, Zod runtime schema validation with `.transform()` safety fallbacks, React functional components with custom hooks.
-- ✅ **Data Extraction**: `pdf-parse` engine with text normalization, whitespace cleaning, and regex contact extraction heuristics.
-- ✅ **LLM Prompt Quality**: Engineered system prompts with strict document type validation, multi-criteria shortlisting, and JSON mode completion retry fallbacks.
-- ✅ **Output Clarity**: Crimson Samurai Dark Cyber UI dashboard with circular SVG match meters, category progress bars, shortlist pills, and detailed invalid document audit cards.

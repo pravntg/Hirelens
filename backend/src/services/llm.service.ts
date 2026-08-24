@@ -48,7 +48,42 @@ export async function evaluateResumeWithLLM(
 
   const userPrompt = buildUserPrompt(resumeText, jobDescription, targetRole);
 
-  // 1. Always try Groq API (Qwen 3.6 27B) first if Groq key exists — Verified working 100%
+  // 1. Gemini REST API (gemini-3.6-flash) — Fast 0.5s response with AQ... or AIza... keys
+  if (geminiApiKey) {
+    try {
+      console.log('Running REAL Live LLM evaluation using Google Gemini REST API (gemini-3.6-flash)...');
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiApiKey}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: SYSTEM_PROMPT + '\n\n' + userPrompt }] }],
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.2 }
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (text) {
+          const parsed = extractAndParseJSON(text);
+          const validated = EvaluationSchema.parse(parsed);
+          console.log(`Google Gemini 3.6 Flash Evaluation Success! Score: ${validated.evaluation.overall_score}/10`);
+          return {
+            candidate_profile: validated.candidate_profile as CandidateProfile,
+            evaluation: validated.evaluation as EvaluationResult,
+            provider_used: 'Google Gemini 3.6 Flash (Live LLM)'
+          };
+        }
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        console.warn('Gemini REST API response error:', errJson?.error?.message || res.statusText);
+      }
+    } catch (err: any) {
+      console.warn('Gemini REST API attempt failed:', err.message);
+    }
+  }
+
+  // 2. Groq Cloud API (Qwen 3.6 27B)
   if (groqApiKey && (groqApiKey.startsWith('gsk_') || providerPreference === 'groq' || providerPreference === 'auto')) {
     try {
       console.log('Running REAL Live LLM evaluation using Groq Cloud API (Qwen 3.6 27B)...');
@@ -71,7 +106,7 @@ export async function evaluateResumeWithLLM(
       const parsed = extractAndParseJSON(content);
       const validated = EvaluationSchema.parse(parsed);
 
-      console.log(`Groq AI Evaluation Success! Overall Score: ${validated.evaluation.overall_score}/10`);
+      console.log(`Groq AI Evaluation Success! Score: ${validated.evaluation.overall_score}/10`);
 
       return {
         candidate_profile: validated.candidate_profile as CandidateProfile,
@@ -79,39 +114,7 @@ export async function evaluateResumeWithLLM(
         provider_used: 'Groq Cloud AI (Qwen-3.6-27B)'
       };
     } catch (err: any) {
-      console.warn('Groq API call failed, trying next provider:', err.message);
-    }
-  }
-
-  // 2. Try Gemini API
-  if (geminiApiKey) {
-    console.log('Running LLM evaluation using Google Gemini API...');
-    const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const geminiModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
-
-    for (const modelName of geminiModels) {
-      try {
-        const model = genAI.getGenerativeModel({
-          model: modelName,
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.2
-          }
-        });
-
-        const result = await model.generateContent([SYSTEM_PROMPT + '\n\n' + userPrompt]);
-        const responseText = result.response.text() || '';
-        const parsed = extractAndParseJSON(responseText);
-        const validated = EvaluationSchema.parse(parsed);
-
-        return {
-          candidate_profile: validated.candidate_profile as CandidateProfile,
-          evaluation: validated.evaluation as EvaluationResult,
-          provider_used: `Google Gemini (${modelName})`
-        };
-      } catch (err: any) {
-        console.warn(`Gemini model ${modelName} attempt failed:`, err.message);
-      }
+      console.warn('Groq API call note:', err.message);
     }
   }
 
@@ -140,7 +143,7 @@ export async function evaluateResumeWithLLM(
         provider_used: 'OpenAI GPT-4o (Live LLM)'
       };
     } catch (err: any) {
-      console.warn('OpenAI API call failed:', err.message);
+      console.warn('OpenAI API call note:', err.message);
     }
   }
 

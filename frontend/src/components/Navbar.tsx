@@ -50,7 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, setActiv
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             
-            {/* RESUMIND Crimson Brand Logo */}
+            {/* HIRELENS Crimson Brand Logo */}
             <div 
               onClick={() => handleTabSelect('upload')}
               className="flex items-center space-x-3 cursor-pointer group"
@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, setActiv
               
               <div>
                 <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                  RESUMIND <span className="text-xs bg-gradient-to-r from-[#FF1744] via-[#FF5252] to-[#D50000] bg-clip-text text-transparent font-extrabold px-2 py-0.5 bg-[#FF1744]/10 rounded-lg border border-[#FF1744]/30">ATS</span>
+                  HIRELENS <span className="text-xs bg-gradient-to-r from-[#FF1744] via-[#FF5252] to-[#D50000] bg-clip-text text-transparent font-extrabold px-2 py-0.5 bg-[#FF1744]/10 rounded-lg border border-[#FF1744]/30">ATS</span>
                 </span>
                 <span className="text-[10px] text-[#FF1744] font-extrabold block tracking-widest uppercase -mt-0.5 drop-shadow-[0_0_6px_rgba(255,23,68,0.6)]">
                   CRIMSON AI SCREENER

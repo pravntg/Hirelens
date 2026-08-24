@@ -1,4 +1,4 @@
-# Smart Resume Screener & ATS Dashboard 🚀
+# HireLens ATS • Smart AI Resume Screener 🚀
 
 An enterprise-grade, production-ready **AI-Powered Smart Resume Screener** and modern **ATS Candidate Dashboard**. The system ingests resumes (PDF files) alongside target Job Descriptions (JD), extracts structured candidate data (skills, experience, education), performs semantic LLM evaluation across 4 dimensions, computes a fit score (1-10 / 0-100), determines strict multi-criteria shortlist status, and presents shortlisted candidates in a Crimson Samurai Dark Cyber UI dashboard.
 

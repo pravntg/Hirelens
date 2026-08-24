@@ -1,7 +1,7 @@
 {
-  "name": "resumind-ats",
+  "name": "hirelens-ats",
   "version": "1.0.0",
-  "description": "Resumind ATS — AI-Powered Smart Resume Screener",
+  "description": "HireLens ATS — AI-Powered Smart Resume Screener",
   "scripts": {
     "setup": "npm --prefix backend install && npm --prefix frontend install",
     "dev:backend": "npm --prefix backend run dev",

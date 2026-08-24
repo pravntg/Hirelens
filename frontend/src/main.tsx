@@ -23,7 +23,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error in Resumind ATS application:', error, errorInfo);
+    console.error('Uncaught error in HireLens ATS application:', error, errorInfo);
   }
 
   private handleReset = () => {
@@ -48,7 +48,7 @@ class ErrorBoundary extends Component<Props, State> {
             <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 font-black text-xl flex items-center justify-center mx-auto">
               ⚠️
             </div>
-            <h2 className="text-xl font-black text-[#7C2D12]">Resumind ATS Notification</h2>
+            <h2 className="text-xl font-black text-[#7C2D12]">HireLens ATS Notification</h2>
             <p className="text-xs text-[#9A3412] leading-relaxed font-medium">
               {String(errMsg)}
             </p>
@@ -57,7 +57,7 @@ class ErrorBoundary extends Component<Props, State> {
                 onClick={this.handleReset}
                 className="bg-gradient-to-r from-[#EA580C] to-[#F97316] text-white font-extrabold text-xs px-6 py-3 rounded-2xl shadow-lg transition-all hover:scale-105"
               >
-                Reset & Reload Resumind ATS
+                Reset & Reload HireLens ATS
               </button>
             </div>
           </div>

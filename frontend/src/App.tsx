@@ -67,21 +67,16 @@ export const App: React.FC = () => {
   const shortlistedCount = candidates.filter((c) => c.evaluation?.shortlisted).length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0A0A0E] text-slate-100 relative overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#D1F4E0]/80 via-[#E0E7FF]/70 to-[#E9D5FF]/60 text-slate-900 relative overflow-hidden font-sans">
       
-      {/* ATMOSPHERIC BACKGROUND EFFECTS */}
+      {/* ATMOSPHERIC ENHANCV PASTEL MESH BACKGROUND EFFECTS */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Top-Right Glowing Crimson Aura */}
-        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-gradient-to-br from-[#FF1744]/20 via-[#D50000]/5 to-transparent rounded-full blur-3xl opacity-70 animate-pulse" style={{ animationDuration: '6s' }} />
-        {/* Bottom-Left Ambient Charcoal-Red Glow */}
-        <div className="absolute -bottom-40 -left-40 w-[700px] h-[700px] bg-gradient-to-tr from-[#900C3F]/15 via-[#FF1744]/5 to-transparent rounded-full blur-3xl opacity-60" />
-        {/* Subtle Katana Blade Line */}
-        <div className="absolute top-1/3 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#FF1744]/30 to-transparent shadow-[0_0_8px_#FF1744]" />
-        
-        {/* Floating Crimson Petals */}
-        <div className="absolute top-16 left-12 w-2 h-4 bg-[#FF1744]/40 rounded-full rotate-45 blur-[0.5px] animate-petal" style={{ animationDelay: '0s' }} />
-        <div className="absolute top-1/4 right-20 w-3 h-5 bg-[#D50000]/50 rounded-full -rotate-12 blur-[0.5px] animate-petal" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-1/3 left-1/4 w-2 h-3 bg-[#FF5252]/40 rounded-full rotate-90 blur-[0.5px] animate-petal" style={{ animationDelay: '4s' }} />
+        {/* Top-Left Soft Mint Aura */}
+        <div className="absolute -top-40 -left-40 w-[700px] h-[700px] bg-emerald-200/50 rounded-full blur-3xl opacity-70 animate-pulse" style={{ animationDuration: '8s' }} />
+        {/* Top-Right Soft Periwinkle Lavender Glow */}
+        <div className="absolute -top-40 -right-40 w-[700px] h-[700px] bg-indigo-200/50 rounded-full blur-3xl opacity-70" />
+        {/* Bottom-Right Soft Purple Aura */}
+        <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-purple-200/40 rounded-full blur-3xl opacity-60" />
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col">

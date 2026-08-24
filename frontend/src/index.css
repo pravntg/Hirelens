@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #FFEDD5;
+    color: #7C2D12;
+    @apply antialiased font-sans selection:bg-[#EA580C] selection:text-white;
+  }
+}
+
+/* Custom Rich Orange Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FFEDD5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FDBA74;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #EA580C;
+}
+
+/* CLEAN SINGLE-PAGE PRINT & PDF EXPORT STYLESHEET */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #printable-candidate-report, #printable-candidate-report * {
+    visibility: visible;
+  }
+  
+  #printable-candidate-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 20px;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

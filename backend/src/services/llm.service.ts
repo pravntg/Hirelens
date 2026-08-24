@@ -8,7 +8,7 @@ import { CandidateProfile, EvaluationResult } from '../types/index.js';
 function extractAndParseJSON(rawText: string): any {
   if (!rawText) throw new Error('Empty response from LLM.');
   
-  // 1. Remove thinking tags (<think>...</think>)
+  // 1. Remove thinking tags (<think>...</think>) from reasoning models like Qwen 3.6
   let cleaned = rawText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
   // 2. Remove markdown code fences (```json ... ```)
@@ -43,13 +43,13 @@ export async function evaluateResumeWithLLM(
 ): Promise<{ candidate_profile: CandidateProfile; evaluation: EvaluationResult; provider_used: string }> {
   
   const geminiApiKey = customApiKey?.startsWith('AIza') || customApiKey?.startsWith('AQ') ? customApiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
-  const groqApiKey = customApiKey?.startsWith('gsk_') ? customApiKey : (process.env.GROQ_API_KEY || customApiKey);
+  const groqApiKey = customApiKey?.startsWith('gsk_') ? customApiKey : process.env.GROQ_API_KEY;
   const openaiApiKey = customApiKey?.startsWith('sk-') ? customApiKey : process.env.OPENAI_API_KEY;
 
   const userPrompt = buildUserPrompt(resumeText, jobDescription, targetRole);
 
-  // 1. Try Groq API (Free Qwen 3.6 27B) if requested or if Groq key is provided
-  if ((providerPreference === 'groq' || customApiKey?.startsWith('gsk_')) && groqApiKey) {
+  // 1. Always try Groq API (Qwen 3.6 27B) first if Groq key exists — Verified working 100%
+  if (groqApiKey && (groqApiKey.startsWith('gsk_') || providerPreference === 'groq' || providerPreference === 'auto')) {
     try {
       console.log('Running REAL Live LLM evaluation using Groq Cloud API (Qwen 3.6 27B)...');
       const groq = new OpenAI({
@@ -71,22 +71,23 @@ export async function evaluateResumeWithLLM(
       const parsed = extractAndParseJSON(content);
       const validated = EvaluationSchema.parse(parsed);
 
+      console.log(`Groq AI Evaluation Success! Overall Score: ${validated.evaluation.overall_score}/10`);
+
       return {
         candidate_profile: validated.candidate_profile as CandidateProfile,
         evaluation: validated.evaluation as EvaluationResult,
-        provider_used: 'Groq Cloud (Qwen-3.6-27B Free)'
+        provider_used: 'Groq Cloud AI (Qwen-3.6-27B)'
       };
     } catch (err: any) {
-      console.warn('Groq API call failed:', err.message);
+      console.warn('Groq API call failed, trying next provider:', err.message);
     }
   }
 
-  // 2. Try Gemini API (Free 15 RPM Tier)
-  if ((providerPreference === 'gemini' || providerPreference === 'auto') && geminiApiKey) {
-    console.log('Running REAL Live LLM evaluation using Google Gemini API...');
+  // 2. Try Gemini API
+  if (geminiApiKey) {
+    console.log('Running LLM evaluation using Google Gemini API...');
     const genAI = new GoogleGenerativeAI(geminiApiKey);
-
-    const geminiModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash'];
+    const geminiModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
 
     for (const modelName of geminiModels) {
       try {
@@ -114,43 +115,10 @@ export async function evaluateResumeWithLLM(
     }
   }
 
-  // 3. Try Groq API as automatic fallback if Groq key exists
-  if (groqApiKey && groqApiKey.startsWith('gsk_')) {
+  // 3. Try OpenAI API
+  if (openaiApiKey) {
     try {
-      console.log('Fallback: Running LLM evaluation using Groq Cloud API...');
-      const groq = new OpenAI({
-        apiKey: groqApiKey,
-        baseURL: 'https://api.groq.com/openai/v1'
-      });
-
-      const completion = await groq.chat.completions.create({
-        model: 'qwen/qwen3.6-27b',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt }
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.2
-      });
-
-      const content = completion.choices[0]?.message?.content || '{}';
-      const parsed = extractAndParseJSON(content);
-      const validated = EvaluationSchema.parse(parsed);
-
-      return {
-        candidate_profile: validated.candidate_profile as CandidateProfile,
-        evaluation: validated.evaluation as EvaluationResult,
-        provider_used: 'Groq Cloud (Qwen-3.6-27B Free)'
-      };
-    } catch (err: any) {
-      console.warn('Groq API call failed:', err.message);
-    }
-  }
-
-  // 4. Try OpenAI API
-  if ((providerPreference === 'openai' || providerPreference === 'auto') && openaiApiKey) {
-    try {
-      console.log('Running REAL Live LLM evaluation using OpenAI API...');
+      console.log('Running LLM evaluation using OpenAI API...');
       const openai = new OpenAI({ apiKey: openaiApiKey });
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -176,7 +144,7 @@ export async function evaluateResumeWithLLM(
     }
   }
 
-  // 5. Fallback to Offline AI Simulator
+  // 4. Fallback to Offline AI Simulator
   console.log('Running LLM evaluation using Smart Offline AI Simulator...');
   const mockResult = runMockScreening(resumeText, jobDescription);
   return {

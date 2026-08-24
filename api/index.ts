@@ -155,8 +155,8 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
   const groqKey = apiKey?.startsWith('gsk_') ? apiKey : process.env.GROQ_API_KEY;
   const prompt = `Target Role: ${role}\n\n=== JOB DESCRIPTION ===\n${jdText}\n\n=== RESUME ===\n${resumeText}\n\nReturn JSON only.`;
 
-  // Try Groq if requested
-  if ((provider === 'groq' || apiKey?.startsWith('gsk_')) && groqKey) {
+  // Always try Groq first if Groq key exists
+  if (groqKey) {
     try {
       const groq = new OpenAI({ apiKey: groqKey, baseURL: 'https://api.groq.com/openai/v1' });
       const r = await groq.chat.completions.create({
@@ -165,7 +165,7 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
         response_format: { type: 'json_object' }, temperature: 0.2
       });
       const result = Schema.parse(extractJSON(r.choices[0]?.message?.content || '{}'));
-      return { ...result, provider_used: 'Groq Cloud (Qwen-3.6-27B)' };
+      return { ...result, provider_used: 'Groq Cloud AI (Qwen-3.6-27B)' };
     } catch (e: any) { console.warn('Groq failed:', e.message); }
   }
 

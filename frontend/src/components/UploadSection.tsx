@@ -22,7 +22,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onScreenSuccess })
   const [targetCompany, setTargetCompany] = useState('');
 
   // AI Provider Choice state
-  const [provider, setProvider] = useState<'gemini' | 'groq'>('gemini');
+  const [provider, setProvider] = useState<'gemini' | 'groq'>('groq');
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -137,8 +137,8 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onScreenSuccess })
               onChange={(e) => setProvider(e.target.value as any)}
               className="bg-white border border-[#FB923C]/40 rounded-xl px-4 py-2.5 text-xs text-[#9A3412] font-black focus:outline-none focus:border-[#F97316] cursor-pointer w-full sm:w-auto shadow-sm"
             >
-              <option value="gemini">Google Gemini AI (gemini-1.5-flash)</option>
-              <option value="groq">Groq Cloud AI (qwen-3.6-27b)</option>
+              <option value="groq">Groq Cloud AI (Qwen-3.6-27B Live LLM)</option>
+              <option value="gemini">Google Gemini AI</option>
             </select>
           </div>
 

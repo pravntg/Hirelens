@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm --prefix frontend run build",
+  "buildCommand": "cd frontend 2>/dev/null || true; npm run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.ts": {

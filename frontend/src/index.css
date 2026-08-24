@@ -4,72 +4,53 @@
 
 @layer base {
   body {
-    background-color: #0A0A0E;
-    color: #F1F5F9;
-    @apply antialiased font-sans selection:bg-[#FF1744] selection:text-white overflow-x-hidden;
+    background-color: #F8FAFC;
+    color: #0F172A;
+    @apply antialiased font-sans selection:bg-[#10B981] selection:text-white overflow-x-hidden;
   }
 }
 
-/* Custom Crimson Cyber Scrollbar */
+/* Custom Mint Emerald Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0E;
+  background: #F1F5F9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2D0A14;
+  background: #CBD5E1;
   border-radius: 4px;
-  border: 1px solid rgba(255, 23, 68, 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF1744;
-  box-shadow: 0 0 10px rgba(255, 23, 68, 0.8);
+  background: #10B981;
 }
 
-/* Crimson Cyber Glows & Glassmorphism */
+/* Enhancv Light Card & Pastel Mesh Glows */
 .cyber-card {
-  background: rgba(18, 18, 26, 0.75);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 23, 68, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 23, 68, 0.1);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
 }
 
 .cyber-card:hover {
-  border-color: rgba(255, 23, 68, 0.45);
-  box-shadow: 0 12px 40px 0 rgba(255, 23, 68, 0.15), inset 0 0 0 1px rgba(255, 23, 68, 0.25);
+  border-color: #10B981;
+  box-shadow: 0 10px 30px -4px rgba(16, 185, 129, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+}
+
+.enhancv-hero-bg {
+  background: radial-gradient(100% 100% at 50% 0%, rgba(204, 251, 241, 0.6) 0%, rgba(224, 231, 255, 0.5) 40%, rgba(248, 250, 252, 1) 100%);
 }
 
 .katana-glow {
-  box-shadow: 0 0 15px rgba(255, 23, 68, 0.6), 0 0 30px rgba(255, 23, 68, 0.2);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.1);
 }
 
 .katana-text-glow {
-  text-shadow: 0 0 12px rgba(255, 23, 68, 0.7), 0 0 24px rgba(255, 23, 68, 0.4);
-}
-
-/* Animated Crimson Particles / Sakura Petals Effect */
-@keyframes floatPetal {
-  0% {
-    transform: translateY(0px) rotate(0deg) translateX(0px);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translateY(30px) rotate(180deg) translateX(15px);
-    opacity: 0.4;
-  }
-  100% {
-    transform: translateY(0px) rotate(360deg) translateX(0px);
-    opacity: 0.8;
-  }
-}
-
-.animate-petal {
-  animation: floatPetal 8s ease-in-out infinite;
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
 
 /* CLEAN SINGLE-PAGE PRINT & PDF EXPORT STYLESHEET */

@@ -131,15 +131,15 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* Dark Cyber Footer */}
-        <footer className="border-t border-[#FF1744]/20 bg-[#0C0C12]/90 backdrop-blur-md py-6 text-center text-xs text-slate-400">
+        {/* Enhancv Light Mint Footer */}
+        <footer className="border-t border-slate-200 bg-white/90 backdrop-blur-md py-6 text-center text-xs text-slate-500 mt-12">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#FF1744] shadow-[0_0_8px_#FF1744]" />
-              <span className="font-extrabold text-slate-200 tracking-wider">HIRELENS ATS</span>
-              <span className="text-slate-500">• Shadow Crimson AI Screener</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+              <span className="font-extrabold text-slate-900 tracking-wider">HireLens ATS</span>
+              <span className="text-slate-500 font-medium">• AI Resume Screener</span>
             </div>
-            <p className="text-slate-400">Powered by Google Gemini 3.6 Flash & Groq Cloud AI</p>
+            <p className="text-slate-500 font-medium">Powered by Google Gemini 1.5 Flash & Groq Cloud AI</p>
           </div>
         </footer>
       </div>

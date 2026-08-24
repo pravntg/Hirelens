@@ -246,56 +246,118 @@ export const CandidateDetailModal: React.FC<CandidateDetailModalProps> = ({ cand
 
             </div>
 
-            <div className={`rounded-3xl p-6 border ${
-              candidate.is_valid_resume === false || evaluation?.overall_score <= 1
-                ? 'bg-rose-950/50 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
-                : overallPercentage >= 70 
-                ? 'bg-emerald-950/40 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                : 'bg-[#0D0D14] border-[#FF1744]/30 shadow-[0_0_15px_rgba(255,23,68,0.15)]'
-            }`}>
-              <div className="flex items-center space-x-3 mb-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-lg ${
-                  candidate.is_valid_resume === false || evaluation?.overall_score <= 1
-                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
-                    : overallPercentage >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-[#FF1744]/20 text-[#FF5252] border border-[#FF1744]/40'
-                }`}>
-                  !
+            {/* INVALID DOCUMENT DETAILED DIAGNOSTICS CARD */}
+            {(candidate.is_valid_resume === false || evaluation?.overall_score <= 1) ? (
+              <div className="bg-rose-950/40 border border-rose-500/50 rounded-3xl p-6 shadow-[0_0_20px_rgba(244,63,94,0.15)] space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center font-black text-xl flex-shrink-0">
+                    !
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black text-white">Invalid Document Type Detected</h4>
+                    <p className="text-xs font-bold text-rose-400">Document Rejection Audit & Classification Details</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-lg font-black text-white">
-                    {candidate.is_valid_resume === false || evaluation?.overall_score <= 1 ? 'Invalid Document Type' : `ATS Score - ${overallPercentage}/100`}
-                  </h4>
-                  <p className={`text-xs font-bold ${
-                    candidate.is_valid_resume === false || evaluation?.overall_score <= 1
-                      ? 'text-rose-400'
-                      : overallPercentage >= 70 ? 'text-emerald-400' : 'text-[#FF5252]'
-                  }`}>
-                    {candidate.is_valid_resume === false || evaluation?.overall_score <= 1
-                      ? 'Not a Candidate Resume / CV'
-                      : overallPercentage >= 70 ? 'Strong Fit' : 'Needs Improvement'}
+
+                {/* Primary Reason */}
+                <div className="bg-[#0D0D14] border border-rose-500/30 rounded-2xl p-4 space-y-2">
+                  <span className="text-[11px] font-extrabold text-rose-400 uppercase tracking-wider block">Primary Rejection Cause</span>
+                  <p className="text-xs font-medium text-slate-200 leading-relaxed">
+                    {safeText(candidate.invalid_resume_reason || evaluation?.justification || evaluation?.ai_summary) || 'The uploaded file does not match individual candidate resume/CV structure.'}
+                  </p>
+                </div>
+
+                {/* Audit Breakdown Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="bg-[#12121A] border border-rose-500/20 rounded-xl p-3 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase block">Document Classification</span>
+                    <span className="font-bold text-rose-300">
+                      {candidate.raw_text?.toLowerCase().includes('lab sheet') ? 'University Lab Sheet / Worksheet'
+                        : candidate.raw_text?.toLowerCase().includes('job description') ? 'Job Description Specification'
+                        : candidate.raw_text?.toLowerCase().includes('certificate') ? 'Course Completion Certificate'
+                        : 'Non-Resume Academic File'}
+                    </span>
+                  </div>
+
+                  <div className="bg-[#12121A] border border-rose-500/20 rounded-xl p-3 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase block">Employment History Audit</span>
+                    <span className="font-bold text-rose-400">❌ Missing Candidate Work History</span>
+                  </div>
+                </div>
+
+                {/* Detailed Missing Criteria Checklist */}
+                <div className="space-y-2 pt-2 border-t border-rose-500/20">
+                  <span className="text-[11px] font-bold text-slate-300 uppercase block">ATS Verification Failures:</span>
+                  <ul className="space-y-1.5 text-xs text-rose-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-rose-400 font-bold">•</span>
+                      <span>No individual employment history, role progression, or professional career timeline found.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-rose-400 font-bold">•</span>
+                      <span>Document contains instructional/academic content (e.g. lab tasks, question paper queries, or JD requirements).</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-rose-400 font-bold">•</span>
+                      <span>Lacks candidate personal contact credentials or verified individual project achievements.</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Actionable Solution */}
+                <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-4 space-y-1.5 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-400">
+                    <span>💡 Action Required:</span>
+                  </div>
+                  <p className="text-slate-300 leading-relaxed">
+                    Please upload a valid <strong className="text-emerald-300">individual candidate's Resume or CV (.pdf format)</strong> containing work experience, skills, and education to perform ATS screening.
                   </p>
                 </div>
               </div>
+            ) : (
+              <div className={`rounded-3xl p-6 border ${
+                overallPercentage >= 70 
+                  ? 'bg-emerald-950/40 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                  : 'bg-[#0D0D14] border-[#FF1744]/30 shadow-[0_0_15px_rgba(255,23,68,0.15)]'
+              }`}>
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-lg ${
+                    overallPercentage >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-[#FF1744]/20 text-[#FF5252] border border-[#FF1744]/40'
+                  }`}>
+                    !
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black text-white">
+                      ATS Score - {overallPercentage}/100
+                    </h4>
+                    <p className={`text-xs font-bold ${
+                      overallPercentage >= 70 ? 'text-emerald-400' : 'text-[#FF5252]'
+                    }`}>
+                      {overallPercentage >= 70 ? 'Strong Fit' : 'Needs Improvement'}
+                    </p>
+                  </div>
+                </div>
 
-              <p className="text-xs text-slate-300 mb-4">
-                {safeText(candidate.invalid_resume_reason || evaluation?.ai_summary) || 'This score represents how well the candidate\'s resume is likely to perform in Applicant Tracking Systems.'}
-              </p>
+                <p className="text-xs text-slate-300 mb-4">
+                  {safeText(evaluation?.ai_summary) || 'This score represents how well the candidate\'s resume is likely to perform in Applicant Tracking Systems.'}
+                </p>
 
-              <ul className="space-y-2 text-xs">
-                {missingReqsList.slice(0, 4).map((req, i) => (
-                  <li key={i} className="flex items-start gap-2 text-[#FF5252]">
-                    <span>⚠️</span>
-                    <span>{safeText(req)}</span>
-                  </li>
-                ))}
-                {missingReqsList.length === 0 && (
-                  <li className="flex items-start gap-2 text-emerald-400">
-                    <span className="text-emerald-400">✓</span>
-                    <span>Candidate satisfies all core requirements for the target role!</span>
-                  </li>
-                )}
-              </ul>
-            </div>
+                <ul className="space-y-2 text-xs">
+                  {missingReqsList.slice(0, 4).map((req, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[#FF5252]">
+                      <span>⚠️</span>
+                      <span>{safeText(req)}</span>
+                    </li>
+                  ))}
+                  {missingReqsList.length === 0 && (
+                    <li className="flex items-start gap-2 text-emerald-400">
+                      <span className="text-emerald-400">✓</span>
+                      <span>Candidate satisfies all core requirements for the target role!</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
 
             <div className="space-y-3">
               

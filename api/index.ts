@@ -296,13 +296,26 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
     try {
       console.log('Running Live Groq Cloud LLM evaluation (qwen/qwen3.6-27b)...');
       const groq = new OpenAI({ apiKey: groqKey, baseURL: 'https://api.groq.com/openai/v1' });
-      const r = await groq.chat.completions.create({
-        model: 'qwen/qwen3.6-27b',
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-        temperature: 0.2
-      });
-      const content = r.choices[0]?.message?.content || '{}';
+      let content = '';
+
+      try {
+        const r = await groq.chat.completions.create({
+          model: 'qwen/qwen3.6-27b',
+          messages: [{ role: 'system', content: SYSTEM_PROMPT + '\nReturn ONLY valid JSON.' }, { role: 'user', content: prompt }],
+          response_format: { type: 'json_object' },
+          temperature: 0.2
+        });
+        content = r.choices[0]?.message?.content || '{}';
+      } catch (jsonErr: any) {
+        console.warn('Groq json_object mode failed, retrying standard completion mode:', jsonErr.message);
+        const r2 = await groq.chat.completions.create({
+          model: 'qwen/qwen3.6-27b',
+          messages: [{ role: 'system', content: SYSTEM_PROMPT + '\nReturn ONLY valid JSON.' }, { role: 'user', content: prompt }],
+          temperature: 0.2
+        });
+        content = r2.choices[0]?.message?.content || '{}';
+      }
+
       const parsed = extractJSON(content);
       const validated = Schema.parse(parsed);
       const processed = enforceStrictShortlistCriteria(validated);

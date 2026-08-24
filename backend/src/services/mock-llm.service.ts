@@ -1,39 +1,6 @@
 import { CandidateProfile, EvaluationResult } from '../types/index.js';
 
 export function runMockScreening(resumeText: string, jobDescription: string): { is_valid_resume: boolean; invalid_resume_reason?: string | null; candidate_profile: CandidateProfile; evaluation: EvaluationResult } {
-  
-  // Check if uploaded document is a Project Proposal slide deck, Capstone deck, or non-resume document
-  const isNonResumeDoc = /slide\s*\d+|preencoded\.png|capstone\s*project|project\ proposal|agenda|problem\ statement|single-agent\ bottleneck|multi-agent\ task|presentation\ deck|lecture\s*\d+/i.test(resumeText);
-
-  if (isNonResumeDoc) {
-    return {
-      is_valid_resume: false,
-      invalid_resume_reason: 'Uploaded document is a Capstone Project Proposal slide deck, not an individual candidate resume.',
-      candidate_profile: {
-        name: 'Invalid Document (Project Deck)',
-        contact: { email: null, phone: null },
-        total_years_experience: '0 years',
-        education: [],
-        skills: { technical: [], soft: [] }
-      },
-      evaluation: {
-        overall_score: 1,
-        shortlisted: false,
-        breakdown: {
-          skills_score: 0,
-          experience_score: 0,
-          education_score: 0,
-          tone_and_relevance_score: 0
-        },
-        justification: 'Invalid Document Type: Uploaded file is a Capstone Project Proposal presentation slide deck, not an individual candidate resume/CV.',
-        ai_summary: 'The uploaded file appears to be a presentation slide deck or project proposal, not an individual candidate resume.',
-        strengths: [],
-        missing_requirements: ['Valid Individual Candidate Resume/CV document required'],
-        recruiter_notes: ['Reject document: Please upload an individual candidate resume or CV file.']
-      }
-    };
-  }
-
   // 1. Extract contact details via regex heuristics
   const emailMatch = resumeText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   const email = emailMatch ? emailMatch[0] : null;

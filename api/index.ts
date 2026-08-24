@@ -564,13 +564,20 @@ app.post(['/screen', '/api/screen'], resumeUpload, async (req: Request, res: Res
       provider_used: analysis.provider_used
     };
 
-    // Save to DB (non-blocking)
-    if (dbState === 'connected') {
-      try {
+    // Save to DB (Awaited for guaranteed MongoDB Atlas persistence)
+    try {
+      await connectDB();
+      if (mongoose.connection.readyState === 1) {
         const doc = new Candidate(candidateData);
         const saved = await doc.save();
-        if (saved?._id) candidateData._id = String(saved._id);
-      } catch (e: any) { console.warn('DB save skipped:', e.message); }
+        if (saved?._id) {
+          candidateData._id = String(saved._id);
+          candidateData.saved_to_db = true;
+        }
+        console.log(`✅ Candidate record saved to MongoDB Atlas! ID: ${candidateData._id}`);
+      }
+    } catch (e: any) {
+      console.warn('DB save note:', e.message);
     }
 
     return res.status(201).json({ message: 'Resume compared successfully', candidate: candidateData });

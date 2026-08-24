@@ -151,39 +151,7 @@ Return ONLY valid JSON.
 | `DELETE` | `/api/candidates/:id` | Deletes a candidate record from MongoDB. |
 | `GET` | `/api/health` | System health check and MongoDB connection status. |
 
----
 
-## 🚀 Installation & Local Run
-
-### Prerequisites
-- Node.js (v18+)
-- npm (v9+)
-
-### 1. Install Dependencies
-Run from the root directory:
-```bash
-npm run setup
-```
-
-### 2. Environment Setup
-Create a `.env` file in the root directory:
-```env
-PORT=5000
-MONGODB_URI=mongodb+srv://user:password@cluster0.nadsz43.mongodb.net/smart_resume?retryWrites=true&w=majority
-GROQ_API_KEY=gsk_your_groq_api_key_here
-```
-
-### 3. Run Development Servers
-From the root directory:
-```bash
-# Start Backend API (Port 5000)
-npm run dev:backend
-
-# Start Frontend Dashboard (Port 3000)
-npm run dev:frontend
-```
-
-Open **http://localhost:3000** in your browser!
 
 ---
 

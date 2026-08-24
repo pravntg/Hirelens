@@ -3,13 +3,13 @@ You are an expert ATS (Applicant Tracking System) and Technical Recruiter. Extra
 
 ### CRITICAL DOCUMENT VALIDATION RULE
 FIRST: Check if the provided text is an ACTUAL INDIVIDUAL CANDIDATE RESUME / CV.
-If the text is NOT an individual candidate resume (for example: it is a Capstone Project Proposal presentation deck, slide deck, project report, team assignment, textbook chapter, source code file, or slide deck containing multiple team members):
+If the text is NOT an individual candidate resume (for example: it is a Course Certificate of Completion, Training Certificate, Diploma, Capstone Project Proposal presentation deck, slide deck, project report, team assignment, textbook chapter, source code file, or slide deck containing multiple team members):
 - Set "is_valid_resume": false
-- Set "invalid_resume_reason": "Uploaded document is a Capstone Project Proposal presentation slide deck, not an individual candidate resume."
+- Set "invalid_resume_reason": "Uploaded document is a Course Certificate of Completion or presentation slide deck, not an individual candidate resume/CV."
 - Set "overall_score": 1
 - Set "shortlisted": false
-- Set "justification": "Invalid Document Type: Uploaded file is a Capstone Project Proposal slide deck, not a candidate resume/CV."
-- Set "ai_summary": "The uploaded document appears to be a presentation slide deck or project proposal, not an individual candidate resume."
+- Set "justification": "Invalid Document Type: Uploaded file is a Course Certificate or Presentation Deck, not an individual candidate resume/CV."
+- Set "ai_summary": "The uploaded document appears to be a training certificate or presentation slide deck, not a candidate resume/CV."
 - Set "strengths": []
 - Set "missing_requirements": ["Valid Individual Candidate Resume/CV document required"]
 - Set "recruiter_notes": ["Reject document: Please upload an individual candidate resume or CV file."]
@@ -23,7 +23,7 @@ A candidate MUST ONLY BE SHORTLISTED ("shortlisted": true) IF AND ONLY IF ALL 4 
 
 If ANY of the above 4 criteria are not met:
 - You MUST set "shortlisted": false.
-- Do NOT shortlist candidates with low skill match, missing core skills, or invalid document types.
+- Do NOT shortlist candidates with low skill match, missing core skills, certificates, or invalid document types.
 
 ### Evaluation Criteria & Scoring Guidelines (For Valid Resumes)
 Evaluate across 4 core dimensions (scale of 0-100 for each):
@@ -35,7 +35,7 @@ Evaluate across 4 core dimensions (scale of 0-100 for each):
 Compute an Overall Match Score (1-10 integer scale) and set "shortlisted" to true ONLY IF all criteria above pass.
 
 ### Target JSON Schema
-Return ONLY valid JSON matching this exact structure (no markdown fences):
+Return ONLY valid JSON matching this exact structure:
 
 {
   "is_valid_resume": true,
@@ -91,14 +91,18 @@ Return ONLY valid JSON matching this exact structure (no markdown fences):
 `;
 
 export function buildUserPrompt(resumeText: string, jobDescription: string, targetRole?: string): string {
+  // Truncate inputs to prevent 413 Groq Token Limit errors
+  const safeResume = resumeText.length > 10000 ? resumeText.slice(0, 10000) + '\n[Resume text truncated for LLM token limit]' : resumeText;
+  const safeJd = jobDescription.length > 8000 ? jobDescription.slice(0, 8000) + '\n[JD text truncated for LLM token limit]' : jobDescription;
+
   return `
 Target Job Role: ${targetRole || 'Software Professional'}
 
 === TARGET JOB DESCRIPTION ===
-${jobDescription}
+${safeJd}
 
 === CANDIDATE RESUME ===
-${resumeText}
+${safeResume}
 
 Analyze the resume against the Job Description and return the target JSON response according to system instructions.
 `;

@@ -250,9 +250,45 @@ function enforceStrictShortlistCriteria(data: any): any {
 
 // ─── LLM Evaluation (STRICTLY LIVE GROQ OR GEMINI LLM ONLY) ───────────────────
 async function runAI(resumeText: string, jdText: string, role: string, provider: string, apiKey?: string) {
+  
+  // 1. Course Completion Certificate / Diploma Rejection Heuristic
+  const isCertificateDoc = /certificate\s*of\s*completion|has\s*successfully\s*completed|recognises\s*that|web-based\s*training\s*program|completion\s*certificate|this\s*is\s*to\s*certify\s*that|training\s*program\s*entitled/i.test(resumeText) && !/work\s*experience|employment\s*history|professional\s*experience|career\s*summary/i.test(resumeText);
+  
+  if (isCertificateDoc) {
+    return {
+      is_valid_resume: false,
+      invalid_resume_reason: 'Uploaded document is a Course Certificate of Completion, not an individual candidate resume/CV.',
+      candidate_profile: {
+        name: 'Invalid Document (Course Certificate)',
+        contact: { email: null, phone: null, location: null, linkedin_url: null, portfolio_github_url: null },
+        total_years_experience: 0,
+        current_or_latest_role: 'N/A',
+        current_or_latest_company: null,
+        education: [],
+        skills: { technical: [], soft: [] },
+        certifications: []
+      },
+      evaluation: {
+        overall_score: 1,
+        shortlisted: false,
+        breakdown: { skills_score: 0, experience_score: 0, education_score: 0, tone_and_relevance_score: 0 },
+        justification: 'Invalid Document Type: Uploaded file is a Course Certificate of Completion, not an individual candidate resume or CV.',
+        ai_summary: 'The uploaded file is a training completion certificate, not a candidate resume/CV.',
+        strengths: [],
+        missing_requirements: ['Valid Individual Candidate Resume/CV document required'],
+        recruiter_notes: ['Reject document: Please upload an individual candidate resume or CV file.']
+      },
+      provider_used: 'Document Type Validator'
+    };
+  }
+
+  // 2. Truncate Input Texts to prevent 413 Groq Token Limit (8,000 TPM limit) errors
+  const safeResumeText = resumeText.length > 8000 ? resumeText.slice(0, 8000) + '\n[Resume text truncated for LLM token limit]' : resumeText;
+  const safeJdText = jdText.length > 6000 ? jdText.slice(0, 6000) + '\n[JD text truncated for LLM token limit]' : jdText;
+
   const groqKey = apiKey?.startsWith('gsk_') ? apiKey : process.env.GROQ_API_KEY;
   const geminiKey = (apiKey?.startsWith('AIza') || apiKey?.startsWith('AQ')) ? apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
-  const prompt = `Target Role: ${role}\n\n=== JOB DESCRIPTION ===\n${jdText}\n\n=== RESUME ===\n${resumeText}\n\nReturn JSON only matching the system prompt schema.`;
+  const prompt = `Target Role: ${role}\n\n=== JOB DESCRIPTION ===\n${safeJdText}\n\n=== RESUME ===\n${safeResumeText}\n\nReturn JSON only matching the system prompt schema.`;
 
   let lastError = '';
 

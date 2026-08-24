@@ -274,11 +274,11 @@ export const CandidateList: React.FC<CandidateListProps> = ({
                       {shortlisted ? 'Shortlisted' : 'Under Review'}
                     </span>
 
-                    {profile?.total_years_experience && (
+                    {Boolean(profile?.total_years_experience) ? (
                       <span className="text-[11px] font-semibold bg-[#0D0D14] border border-[#FF1744]/20 text-slate-300 px-2.5 py-1 rounded-full">
                         {safeString(profile.total_years_experience)} Exp
                       </span>
-                    )}
+                    ) : null}
 
                     <span className="text-[11px] text-slate-300 bg-[#0D0D14] border border-[#FF1744]/20 px-2.5 py-1 rounded-full flex items-center gap-1">
                       <Zap className="w-3 h-3 text-[#FF1744]" />

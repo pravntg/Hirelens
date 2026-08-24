@@ -1,104 +1,140 @@
 # Smart Resume Screener & ATS Dashboard 🚀
 
-An enterprise-grade, production-ready **AI-Powered Smart Resume Screener** and modern **ATS Candidate Dashboard**. The system ingests resumes (PDF/DOCX/TXT) alongside target Job Descriptions (JD), extracts structured candidate data, performs semantic LLM evaluation across 4 dimensions, computes a fit score (1-10 / 0-100), determines shortlist status, and presents shortlisted candidates in a modern split-screen dashboard.
+An enterprise-grade, production-ready **AI-Powered Smart Resume Screener** and modern **ATS Candidate Dashboard**. The system ingests resumes (PDF files) alongside target Job Descriptions (JD), extracts structured candidate data (skills, experience, education), performs semantic LLM evaluation across 4 dimensions, computes a fit score (1-10 / 0-100), determines strict multi-criteria shortlist status, and presents shortlisted candidates in a Crimson Samurai Dark Cyber UI dashboard.
+
+---
+
+## 🔗 Live Links & Deliverables
+
+- **Live Production App**: **[https://resumind-lake-two.vercel.app](https://resumind-lake-two.vercel.app)**
+- **GitHub Repository**: **[https://github.com/pravntg/resumind.git](https://github.com/pravntg/resumind.git)**
+- **MongoDB Atlas Cluster**: `smart_resume` database (`candidates` collection)
 
 ---
 
 ## 🏗️ Technical Stack & Architecture
 
 ```
-[ Candidate Resumes (PDF/DOCX/TXT) + Target JD ]
+[ Candidate Resumes (PDF ONLY) + Target Job Description (PDF/Text) ]
                        │
                        ▼
            ┌──────────────────────┐
-           │ React + Tailwind UI  │ (Vite + TypeScript + Lucide Icons)
+           │ React + Tailwind UI  │ (Vite + TypeScript + Crimson Samurai Theme)
            └──────────┬───────────┘
                       │ REST API / Multipart Form-Data
                       ▼
            ┌──────────────────────┐
-           │  Express.js Backend  │ (TypeScript + Multer + Zod)
+           │  Express.js Backend  │ (TypeScript + Multer + Zod + pdf-parse)
            └──────────┬───────────┘
                       │
         ┌─────────────┴─────────────┐
         ▼                           ▼
 ┌───────────────┐          ┌───────────────────┐
-│  pdf-parse /  │          │   LLM Screening   │ (Google Gemini 2.5, OpenAI GPT-4o,
-│ text extract  │          │  Semantic Engine  │  or Smart Offline Simulator)
+│ pdf-parse /   │          │ Live LLM Engine   │ (Groq Cloud Qwen-3.6-27B &
+│ text extract  │          │  Screening Engine │  Google Gemini 1.5 Flash)
 └───────┬───────┘          └─────────┬─────────┘
         │                            │
         └─────────────┬──────────────┘
                       ▼
            ┌──────────────────────┐
-           │ MongoDB (Mongoose)   │ (Document storage for candidate profiles,
-           │ + Memory Fallback    │  scores, breakdowns & recruiter notes)
+           │ MongoDB Atlas DB     │ (Document storage for candidate profiles,
+           │ (smart_resume)       │  scores, breakdowns & recruiter notes)
            └──────────────────────┘
 ```
 
-- **Backend API**: Node.js + Express (TypeScript), `multer` (file handling), `pdf-parse` (PDF extraction), `zod` (runtime schema validation), `mongoose` (MongoDB ODM with automatic `mongodb-memory-server` zero-config fallback).
-- **LLM Integration**: Multi-provider support (Google Gemini API `@google/genai` & OpenAI API `openai`), plus an intelligent offline Heuristic Engine for instant testing without API keys.
-- **Frontend Dashboard**: React 18 + Vite (TypeScript), Tailwind CSS, Lucide React icons, SVG circular gauges.
+- **Backend API**: Node.js + Express (TypeScript), `multer` (file upload), `pdf-parse` (PDF extraction), `zod` (runtime schema validation), `mongoose` (MongoDB Atlas ODM).
+- **LLM Engine**: Dual live AI provider support:
+  - **Groq Cloud AI**: `qwen/qwen3.6-27b` (Deep Reasoning LLM with JSON completion retry fallback).
+  - **Google Gemini AI**: `gemini-1.5-flash` (High-speed multi-modal LLM).
+- **Frontend Dashboard**: React 18 + Vite (TypeScript), Tailwind CSS, Lucide React icons, Crimson Samurai Dark Cyber design system (`#0A0A0E` obsidian canvas, `#FF1744` crimson glows).
 
 ---
 
-## ✨ Core Features
+## ✨ Core Features & Scope Compliance
 
-1. **Multi-Format Ingestion**: Drag-and-drop dropzone for PDF, DOCX, and TXT resume files or raw text paste.
-2. **Preset Target JDs**: Pre-configured target job templates (*Senior Full Stack Engineer*, *Lead AI/ML Engineer*, *Product Manager*).
-3. **Semantic LLM Screening Engine**:
+1. **Strict PDF Upload Validation**: PDF input requirement (`.pdf` ONLY). Non-PDF files (`.docx`, `.txt`) trigger instant upload error feedback.
+2. **Document Type & Purpose Classifier**:
+   - **Academic Lab Sheets & Question Papers**: Automatically flagged as `Invalid Document Type` (`overall_score = 1`).
+   - **Course Certificates & Badges**: Flagged as `Invalid Document Type` (`overall_score = 1`).
+   - **Job Description Specification Files**: Flagged as `Invalid Document Type` (`overall_score = 1`).
+   - **Valid Resumes**: Extracted and evaluated dynamically against job requirements.
+3. **Structured Data Extraction**:
+   - Extracts Candidate Name, Contact Email & Phone, LinkedIn/GitHub links, Total Experience Years, Current Role & Company, Technical & Soft Skills list, Education Degree & Institution, Certifications.
+4. **Semantic LLM Screening Engine**:
    - Evaluates 4 dimensions (0-100 each): **Skills Match**, **Experience Match**, **Education & Certifications**, **Tone & ATS Relevance**.
-   - Calculates **Overall Match Rating** (1-10 integer scale).
-   - Automated Shortlisting (`shortlisted = true` if Overall Score $\ge 7$).
-   - Generates candidate profile, strengths (green checkmarks), missing requirements (amber alerts), and recruiter notes.
-4. **Modern ATS Candidate Dashboard**:
-   - **Summary Stats**: Total candidates, shortlisted count, shortlist rate %, average fit score.
-   - **Candidate Directory**: Searchable by candidate name, skill, or role; filterable by shortlist status (`Shortlisted` vs `Under Review`) and min score slider.
-   - **Split-Screen Deep Dive**: View raw resume text side-by-side with structured AI recommendations.
+   - Computes **Overall Fit Score** (1-10 integer scale & 0-100 percentage scale).
+   - **Strict Multi-Criteria Shortlisting**: Candidates are shortlisted (`shortlisted = true`) IF AND ONLY IF:
+     - `is_valid_resume` === true
+     - `overall_score` $\ge 7/10$
+     - `skills_score` $\ge 65\%$
+     - `experience_score` $\ge 60\%$
+     - `missing_requirements` $\le 3$
+5. **Modern ATS Dashboard**:
+   - **Analytics Bar**: Total candidates, shortlisted count, shortlist rate %, average fit score.
+   - **Candidate Directory**: Searchable by candidate name, skill, or role; filterable by shortlist status (`Shortlisted` vs `Under Review`) and score slider.
+   - **Split-Screen Modal**: View raw extracted resume text side-by-side with structured AI recommendations, strengths checklist, and recruiter action items.
+   - **Detailed Rejection Audit**: Explains exact reasons when non-resume files are uploaded.
 
 ---
 
-## 🎯 LLM Screening Prompt & Schema
+## 🎯 LLM System Prompt & Schema
 
-### System Prompt
+### System Prompt (`screening.prompt.ts`)
 ```text
-You are an expert ATS (Applicant Tracking System) and Technical Recruiter. Your task is to extract candidate profile data from the provided resume text and semantically evaluate the candidate against the target Job Description (JD).
+You are an expert ATS (Applicant Tracking System) and Technical Recruiter. Extract structured candidate profile data from the provided resume text and semantically evaluate the candidate against the target Job Description (JD).
 
-Evaluate across 4 core dimensions (scale of 0-100 for each):
-1. Skills Match (0-100)
-2. Experience Match (0-100)
-3. Education & Certification Match (0-100)
-4. Tone & ATS Relevance (0-100)
+### CRITICAL DOCUMENT VALIDATION RULE
+FIRST: Check if the provided text is an ACTUAL INDIVIDUAL CANDIDATE RESUME / CV.
+If the text is NOT an individual candidate resume (for example: Course Certificate of Completion, Academic Lab Sheet, Question Paper, Job Description Specification, or Presentation Deck):
+- Set "is_valid_resume": false
+- Set "invalid_resume_reason": "Uploaded document is not an individual candidate resume/CV."
+- Set "overall_score": 1
+- Set "shortlisted": false
 
-Compute an Overall Match Score (1-10 integer scale) and set "shortlisted" to true if Overall Score >= 7. Provide clear justifications, highlighted strengths, missing requirements, and recruiter notes.
+### STRICT CRITERIA-BASED SHORTLISTING RULES
+A candidate MUST ONLY BE SHORTLISTED ("shortlisted": true) IF AND ONLY IF ALL 4 OF THE FOLLOWING CRITERIA ARE MET:
+1. "is_valid_resume" is true (must be a real candidate resume/CV).
+2. "overall_score" >= 7 (out of 10).
+3. "skills_score" >= 65 (out of 100).
+4. "experience_score" >= 60 (out of 100).
+
+Return ONLY valid JSON.
 ```
 
 ### Enforced Output JSON Schema
 ```json
 {
+  "is_valid_resume": true,
+  "invalid_resume_reason": null,
   "candidate_profile": {
-    "name": "string",
-    "contact": { "email": "string | null", "phone": "string | null" },
-    "total_years_experience": "number | string",
+    "name": "Candidate Full Name",
+    "contact": { "email": "email@example.com", "phone": "+1234567890", "location": "City, Country" },
+    "total_years_experience": 4,
+    "current_or_latest_role": "Full Stack Engineer",
+    "current_or_latest_company": "Tech Corp",
     "education": [
-      { "degree": "string", "institution": "string", "year": "string | null" }
+      { "degree": "B.Tech Computer Science", "institution": "University Name", "year": "2022" }
     ],
     "skills": {
-      "technical": ["string"],
-      "soft": ["string"]
-    }
+      "technical": ["React", "Node.js", "TypeScript", "MongoDB"],
+      "soft": ["Problem Solving", "Communication"]
+    },
+    "certifications": ["AWS Certified Developer"]
   },
   "evaluation": {
-    "overall_score": 8,
+    "overall_score": 9,
     "shortlisted": true,
     "breakdown": {
-      "skills_score": 85,
-      "experience_score": 80,
-      "education_score": 90,
-      "tone_and_relevance_score": 85
+      "skills_score": 90,
+      "experience_score": 85,
+      "education_score": 85,
+      "tone_and_relevance_score": 90
     },
-    "justification": "string",
-    "strengths": ["string"],
-    "missing_requirements": ["string"],
-    "recruiter_notes": ["string"]
+    "justification": "Candidate possesses 4 years of full stack experience matching required stack.",
+    "ai_summary": "1-2 sentence candidate summary overview",
+    "strengths": ["Strong technical skills match", "Relevant work history"],
+    "missing_requirements": [],
+    "recruiter_notes": ["Fast-track to technical phone screen."]
   }
 }
 ```
@@ -109,16 +145,15 @@ Compute an Overall Match Score (1-10 integer scale) and set "shortlisted" to tru
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/screen` | Accepts multipart form data (`resume` file + `job_description`), runs LLM analysis, saves document to MongoDB, returns analysis. |
+| `POST` | `/api/screen` | Accepts multipart form data (`resume` PDF file + `job_description`), runs LLM analysis, saves document to MongoDB Atlas (`smart_resume`), returns analysis. |
 | `GET` | `/api/candidates` | Returns candidate list. Query params: `status` (`shortlisted` / `under_review`), `minScore` (1-10), `search` string. |
 | `GET` | `/api/candidates/:id` | Returns deep-dive candidate document by ID. |
 | `DELETE` | `/api/candidates/:id` | Deletes a candidate record from MongoDB. |
-| `GET` | `/api/jobs` | Returns saved Job Descriptions. |
-| `POST` | `/api/jobs` | Saves a new target Job Description. |
+| `GET` | `/api/health` | System health check and MongoDB connection status. |
 
 ---
 
-## 🚀 Quick Start & Installation
+## 🚀 Installation & Local Run
 
 ### Prerequisites
 - Node.js (v18+)
@@ -130,20 +165,21 @@ Run from the root directory:
 npm run setup
 ```
 
-### 2. Environment Configuration (Optional)
-Copy `.env.example` in `backend/` to `.env`:
-```bash
-cp backend/.env.example backend/.env
+### 2. Environment Setup
+Create a `.env` file in the root directory:
+```env
+PORT=5000
+MONGODB_URI=mongodb+srv://user:password@cluster0.nadsz43.mongodb.net/smart_resume?retryWrites=true&w=majority
+GROQ_API_KEY=gsk_your_groq_api_key_here
 ```
-*(If no API keys or MongoDB instance are supplied, the application automatically uses `mongodb-memory-server` and the Offline AI Simulator for instant zero-config testing).*
 
 ### 3. Run Development Servers
 From the root directory:
 ```bash
-# Terminal 1: Start Backend API (Port 5000)
+# Start Backend API (Port 5000)
 npm run dev:backend
 
-# Terminal 2: Start Frontend Dashboard (Port 3000)
+# Start Frontend Dashboard (Port 3000)
 npm run dev:frontend
 ```
 
@@ -151,9 +187,9 @@ Open **http://localhost:3000** in your browser!
 
 ---
 
-## 📋 Evaluation Focus Summary
+## 🎯 Evaluation Criteria Checklist & Focus
 
-1. **Code Quality & Structure**: Clean modular TypeScript codebase, Controller-Service-Model backend layout, Zod runtime schema validation, React functional components with custom hooks.
-2. **Data Extraction**: `pdf-parse` engine with text normalization, whitespace cleaning, and regex contact extraction heuristics.
-3. **LLM Prompt Quality**: System prompt engineered with explicit criteria definitions, native JSON mode (`responseSchema` for Gemini, `json_object` for OpenAI), and multi-dimensional scoring rules.
-4. **Output Clarity**: Modern ATS dashboard UI with circular SVG match meters, category progress bars, shortlist pills, and split-screen candidate review.
+- ✅ **Code Quality & Structure**: Clean modular TypeScript codebase, Controller-Service-Model backend layout, Zod runtime schema validation with `.transform()` safety fallbacks, React functional components with custom hooks.
+- ✅ **Data Extraction**: `pdf-parse` engine with text normalization, whitespace cleaning, and regex contact extraction heuristics.
+- ✅ **LLM Prompt Quality**: Engineered system prompts with strict document type validation, multi-criteria shortlisting, and JSON mode completion retry fallbacks.
+- ✅ **Output Clarity**: Crimson Samurai Dark Cyber UI dashboard with circular SVG match meters, category progress bars, shortlist pills, and detailed invalid document audit cards.

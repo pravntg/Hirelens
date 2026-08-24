@@ -282,7 +282,38 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
     };
   }
 
-  // 2. Truncate Input Texts to prevent 413 Groq Token Limit (8,000 TPM limit) errors
+  // 2. Job Description Specification File Uploaded as Candidate Resume Heuristic
+  const isJdAsResume = /job\s*description|job\s*opening|key\s*responsibilities|required\s*qualifications|responsibilities:|requirements:|about\s*the\s*role|salary\s*range|how\s*to\s*apply|job\s*requisition/i.test(resumeText) && !/work\s*experience|employment\s*history|professional\s*experience|curriculum\s*vitae|my\s*skills|resume\s*of/i.test(resumeText);
+
+  if (isJdAsResume) {
+    return {
+      is_valid_resume: false,
+      invalid_resume_reason: 'Uploaded document is a Job Description file, not an individual candidate resume/CV.',
+      candidate_profile: {
+        name: 'Invalid Document (Job Description File)',
+        contact: { email: null, phone: null, location: null, linkedin_url: null, portfolio_github_url: null },
+        total_years_experience: 0,
+        current_or_latest_role: 'N/A',
+        current_or_latest_company: null,
+        education: [],
+        skills: { technical: [], soft: [] },
+        certifications: []
+      },
+      evaluation: {
+        overall_score: 1,
+        shortlisted: false,
+        breakdown: { skills_score: 0, experience_score: 0, education_score: 0, tone_and_relevance_score: 0 },
+        justification: 'Invalid Document Type: Uploaded file is a Job Description specification, not an individual candidate resume or CV.',
+        ai_summary: 'The uploaded file is a Job Description document, not a candidate resume/CV.',
+        strengths: [],
+        missing_requirements: ['Valid Individual Candidate Resume/CV document required'],
+        recruiter_notes: ['Reject document: Please upload an individual candidate resume or CV file.']
+      },
+      provider_used: 'Document Type Validator'
+    };
+  }
+
+  // 3. Truncate Input Texts to prevent 413 Groq Token Limit (8,000 TPM limit) errors
   const safeResumeText = resumeText.length > 8000 ? resumeText.slice(0, 8000) + '\n[Resume text truncated for LLM token limit]' : resumeText;
   const safeJdText = jdText.length > 6000 ? jdText.slice(0, 6000) + '\n[JD text truncated for LLM token limit]' : jdText;
 

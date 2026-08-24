@@ -68,6 +68,8 @@ const Job = mongoose.models.Job || mongoose.model('Job', jobSchema);
 
 // ─── Zod Schema ────────────────────────────────────────────────────────────
 const Schema = z.object({
+  is_valid_resume: z.boolean().default(true),
+  invalid_resume_reason: z.string().nullable().default(null),
   candidate_profile: z.object({
     name: z.string().default('Unknown Candidate'),
     contact: z.object({
@@ -92,7 +94,7 @@ const Schema = z.object({
     certifications: z.array(z.string()).default([])
   }).default({}),
   evaluation: z.object({
-    overall_score: z.number().min(1).max(10).default(7),
+    overall_score: z.number().min(0).max(10).default(7),
     shortlisted: z.boolean().default(false),
     breakdown: z.object({
       skills_score: z.number().default(70),
@@ -111,11 +113,23 @@ const Schema = z.object({
 // ─── AI Prompt ─────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are an expert ATS recruiter. Extract candidate data from the resume and score them against the job description.
 
-Score 4 dimensions (0-100 each): Skills Match, Experience Match, Education Match, Tone/ATS Relevance.
-Overall score is 1-10. Set shortlisted=true if overall_score >= 7.
+CRITICAL DOCUMENT VALIDATION RULE:
+First check if the text is an ACTUAL INDIVIDUAL CANDIDATE RESUME / CV.
+If the text is NOT an individual candidate resume (e.g. it is a Capstone Project Proposal presentation deck, slide deck, project report, team assignment, textbook chapter, source code file, or slide deck containing multiple team members):
+- Set "is_valid_resume": false
+- Set "invalid_resume_reason": "Uploaded document is a Capstone Project Proposal presentation slide deck, not an individual candidate resume."
+- Set "overall_score": 1
+- Set "shortlisted": false
+- Set "justification": "Invalid Document Type: Uploaded file is a Capstone Project Proposal slide deck, not a candidate resume/CV."
+- Set "ai_summary": "The uploaded document appears to be a presentation slide deck or project proposal, not an individual candidate resume."
+- Set "strengths": []
+- Set "missing_requirements": ["Valid Individual Candidate Resume/CV document required"]
+- Set "recruiter_notes": ["Reject document: Please upload an individual candidate resume or CV file."]
 
 Return ONLY valid JSON - no markdown, no explanation:
 {
+  "is_valid_resume": true,
+  "invalid_resume_reason": null,
   "candidate_profile": {
     "name": "Full Name",
     "contact": {"email": null, "phone": null, "location": null, "linkedin_url": null, "portfolio_github_url": null},
@@ -151,6 +165,36 @@ function extractJSON(raw: string): any {
 
 // ─── LLM Evaluation ────────────────────────────────────────────────────────
 async function runAI(resumeText: string, jdText: string, role: string, provider: string, apiKey?: string) {
+  
+  // Non-resume document heuristic check
+  const isNonResumeDoc = /slide\s*\d+|preencoded\.png|capstone\s*project|project\ proposal|agenda|problem\ statement|single-agent\ bottleneck|multi-agent\ task|presentation\ deck/i.test(resumeText);
+  if (isNonResumeDoc) {
+    return {
+      is_valid_resume: false,
+      invalid_resume_reason: 'Uploaded document is a Capstone Project Proposal slide deck, not an individual candidate resume.',
+      candidate_profile: {
+        name: 'Invalid Document (Project Deck)',
+        contact: { email: null, phone: null, location: null, linkedin_url: null, portfolio_github_url: null },
+        total_years_experience: 0,
+        current_or_latest_role: 'N/A',
+        current_or_latest_company: null,
+        education: [],
+        skills: { technical: [], soft: [] },
+        certifications: []
+      },
+      evaluation: {
+        overall_score: 1,
+        shortlisted: false,
+        breakdown: { skills_score: 0, experience_score: 0, education_score: 0, tone_and_relevance_score: 0 },
+        justification: 'Invalid Document Type: Uploaded file is a Capstone Project Proposal presentation slide deck, not an individual candidate resume/CV.',
+        ai_summary: 'The uploaded file appears to be a presentation slide deck or project proposal, not an individual candidate resume.',
+        strengths: [],
+        missing_requirements: ['Valid Individual Candidate Resume/CV document required'],
+        recruiter_notes: ['Reject document: Please upload an individual candidate resume or CV file.']
+      },
+      provider_used: 'Document Type Validator'
+    };
+  }
   const geminiKey = (apiKey?.startsWith('AQ') || apiKey?.startsWith('AIza')) ? apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
   const groqKey = apiKey?.startsWith('gsk_') ? apiKey : process.env.GROQ_API_KEY;
   const prompt = `Target Role: ${role}\n\n=== JOB DESCRIPTION ===\n${jdText}\n\n=== RESUME ===\n${resumeText}\n\nReturn JSON only.`;

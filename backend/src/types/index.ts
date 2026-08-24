@@ -46,6 +46,8 @@ export interface CandidateDocument {
   raw_text: string;
   target_role: string;
   job_description: string;
+  is_valid_resume?: boolean;
+  invalid_resume_reason?: string | null;
   candidate_profile: CandidateProfile;
   evaluation: EvaluationResult;
   provider_used: string;

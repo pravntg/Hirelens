@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 export const EvaluationSchema = z.object({
+  is_valid_resume: z.boolean().default(true),
+  invalid_resume_reason: z.string().nullable().default(null),
   candidate_profile: z.object({
     name: z.string().default('Candidate Name Unspecified'),
     contact: z.object({
@@ -34,7 +36,7 @@ export const EvaluationSchema = z.object({
     certifications: []
   }),
   evaluation: z.object({
-    overall_score: z.number().min(1).max(10).default(7),
+    overall_score: z.number().min(0).max(10).default(7),
     shortlisted: z.boolean().default(true),
     breakdown: z.object({
       skills_score: z.number().min(0).max(100).default(70),

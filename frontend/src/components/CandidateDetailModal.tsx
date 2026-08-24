@@ -62,11 +62,15 @@ export const CandidateDetailModal: React.FC<CandidateDetailModalProps> = ({ cand
               <h2 className="text-lg font-black text-white flex items-center gap-2 tracking-tight">
                 <span>{safeText(profile?.name) || 'Unnamed Candidate'}</span>
                 <span className={`text-xs font-bold px-3 py-0.5 rounded-full border ${
-                  evaluation?.shortlisted
+                  candidate.is_valid_resume === false || evaluation?.overall_score <= 1
+                    ? 'bg-rose-950/80 border-rose-500/60 text-rose-300'
+                    : evaluation?.shortlisted
                     ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-400'
                     : 'bg-[#FF1744]/15 border-[#FF1744]/40 text-[#FF5252]'
                 }`}>
-                  {evaluation?.shortlisted ? 'Shortlisted Candidate' : 'Under Review'}
+                  {candidate.is_valid_resume === false || evaluation?.overall_score <= 1
+                    ? 'Invalid Document Type'
+                    : evaluation?.shortlisted ? 'Shortlisted Candidate' : 'Under Review'}
                 </span>
               </h2>
               
@@ -243,26 +247,38 @@ export const CandidateDetailModal: React.FC<CandidateDetailModalProps> = ({ cand
             </div>
 
             <div className={`rounded-3xl p-6 border ${
-              overallPercentage >= 70 
+              candidate.is_valid_resume === false || evaluation?.overall_score <= 1
+                ? 'bg-rose-950/50 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
+                : overallPercentage >= 70 
                 ? 'bg-emerald-950/40 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
                 : 'bg-[#0D0D14] border-[#FF1744]/30 shadow-[0_0_15px_rgba(255,23,68,0.15)]'
             }`}>
               <div className="flex items-center space-x-3 mb-3">
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-lg ${
-                  overallPercentage >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-[#FF1744]/20 text-[#FF5252] border border-[#FF1744]/40'
+                  candidate.is_valid_resume === false || evaluation?.overall_score <= 1
+                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                    : overallPercentage >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-[#FF1744]/20 text-[#FF5252] border border-[#FF1744]/40'
                 }`}>
                   !
                 </div>
                 <div>
-                  <h4 className="text-lg font-black text-white">ATS Score - {overallPercentage}/100</h4>
-                  <p className={`text-xs font-bold ${overallPercentage >= 70 ? 'text-emerald-400' : 'text-[#FF5252]'}`}>
-                    {overallPercentage >= 70 ? 'Strong Fit' : 'Needs Improvement'}
+                  <h4 className="text-lg font-black text-white">
+                    {candidate.is_valid_resume === false || evaluation?.overall_score <= 1 ? 'Invalid Document Type' : `ATS Score - ${overallPercentage}/100`}
+                  </h4>
+                  <p className={`text-xs font-bold ${
+                    candidate.is_valid_resume === false || evaluation?.overall_score <= 1
+                      ? 'text-rose-400'
+                      : overallPercentage >= 70 ? 'text-emerald-400' : 'text-[#FF5252]'
+                  }`}>
+                    {candidate.is_valid_resume === false || evaluation?.overall_score <= 1
+                      ? 'Not a Candidate Resume / CV'
+                      : overallPercentage >= 70 ? 'Strong Fit' : 'Needs Improvement'}
                   </p>
                 </div>
               </div>
 
               <p className="text-xs text-slate-300 mb-4">
-                {safeText(evaluation?.ai_summary) || 'This score represents how well the candidate\'s resume is likely to perform in Applicant Tracking Systems.'}
+                {safeText(candidate.invalid_resume_reason || evaluation?.ai_summary) || 'This score represents how well the candidate\'s resume is likely to perform in Applicant Tracking Systems.'}
               </p>
 
               <ul className="space-y-2 text-xs">

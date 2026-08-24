@@ -147,12 +147,6 @@ export async function evaluateResumeWithLLM(
     }
   }
 
-  // 4. Fallback to Offline AI Simulator
-  console.log('Running LLM evaluation using Smart Offline AI Simulator...');
-  const mockResult = runMockScreening(resumeText, jobDescription);
-  return {
-    candidate_profile: mockResult.candidate_profile as CandidateProfile,
-    evaluation: mockResult.evaluation as EvaluationResult,
-    provider_used: 'Offline AI Simulator'
-  };
+  // STRICT RULE: THROW EXPLICIT ERROR — NO MOCK / DEFAULT FALLBACK ALLOWED!
+  throw new Error('Live AI Evaluation Failed: Unable to reach Groq Cloud or Google Gemini AI endpoints. Please verify API key.');
 }

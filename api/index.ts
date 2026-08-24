@@ -248,82 +248,50 @@ function enforceStrictShortlistCriteria(data: any): any {
   return data;
 }
 
-// ─── DYNAMIC REGEX & NLP RESUME PARSER (DETERMINISTIC FALLBACK) ─────────────
-function dynamicNLPResumeParser(resumeText: string, jdText: string): any {
-  // Extract contact info
-  const emailMatch = resumeText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  const phoneMatch = resumeText.match(/(\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
-  const email = emailMatch ? emailMatch[0] : null;
-  const phone = phoneMatch ? phoneMatch[0] : null;
+// ─── LLM Evaluation (STRICTLY LIVE GROQ OR GEMINI LLM ONLY) ───────────────────
+async function runAI(resumeText: string, jdText: string, role: string, provider: string, apiKey?: string) {
+  const groqKey = apiKey?.startsWith('gsk_') ? apiKey : process.env.GROQ_API_KEY;
+  const geminiKey = (apiKey?.startsWith('AIza') || apiKey?.startsWith('AQ')) ? apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  const prompt = `Target Role: ${role}\n\n=== JOB DESCRIPTION ===\n${jdText}\n\n=== RESUME ===\n${resumeText}\n\nReturn JSON only matching the system prompt schema.`;
 
-  // Extract name from first non-empty lines
-  const lines = resumeText.split('\n').map(l => l.trim()).filter(Boolean);
-  let name = 'Candidate Profile';
-  if (lines.length > 0) {
-    const firstLine = lines[0].replace(/^#+\s*/, '');
-    if (firstLine.length < 40 && !/resume|curriculum|cv|profile/i.test(firstLine)) {
-      name = firstLine;
+  let lastError = '';
+
+  // A. IF PROVIDER IS GEMINI OR GEMINI KEY IS PREFERRED
+  if (provider === 'gemini') {
+    if (geminiKey) {
+      try {
+        console.log('Running Live Gemini REST API evaluation...');
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: SYSTEM_PROMPT + '\n\n' + prompt }] }],
+            generationConfig: { responseMimeType: 'application/json', temperature: 0.2 }
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (text) {
+            const parsed = extractJSON(text);
+            const validated = Schema.parse(parsed);
+            const processed = enforceStrictShortlistCriteria(validated);
+            return { ...processed, provider_used: 'Google Gemini AI (gemini-1.5-flash)' };
+          }
+        } else {
+          const errText = await res.text();
+          lastError = `Gemini API HTTP ${res.status}: ${errText}`;
+        }
+      } catch (e: any) {
+        lastError = `Gemini API Error: ${e.message}`;
+      }
+    } else {
+      lastError = 'No Google Gemini API key configured.';
     }
   }
 
-  // Common Tech Stack Keywords Heuristic
-  const techKeywords = [
-    'JavaScript', 'TypeScript', 'React', 'Node.js', 'Express', 'Python', 'Django', 'FastAPI',
-    'Java', 'Spring Boot', 'C++', 'C#', '.NET', 'SQL', 'PostgreSQL', 'MongoDB', 'Redis',
-    'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'Git', 'GraphQL', 'REST API', 'HTML', 'CSS',
-    'Tailwind', 'Redux', 'Jest', 'CI/CD', 'Machine Learning', 'PyTorch', 'TensorFlow', 'Data Structures'
-  ];
-
-  const foundTech = techKeywords.filter(skill =>
-    new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(resumeText)
-  );
-
-  const jdLower = jdText.toLowerCase();
-  const matchedSkills = foundTech.filter(s => jdLower.includes(s.toLowerCase()));
-  const missingTech = techKeywords.filter(s => jdLower.includes(s.toLowerCase()) && !foundTech.map(x => x.toLowerCase()).includes(s.toLowerCase())).slice(0, 3);
-
-  // Calculate scores dynamically
-  const skillsScore = Math.min(100, Math.max(30, Math.round((matchedSkills.length / Math.max(1, foundTech.length)) * 100) + 40));
-  const expScore = 75;
-  const eduScore = 80;
-  const toneScore = 80;
-
-  const weightedSum = (skillsScore * 0.4) + (expScore * 0.4) + (eduScore * 0.1) + (toneScore * 0.1);
-  const overallScore = Math.min(10, Math.max(1, Math.round(weightedSum / 10)));
-
-  return enforceStrictShortlistCriteria({
-    is_valid_resume: true,
-    invalid_resume_reason: null,
-    candidate_profile: {
-      name,
-      contact: { email, phone, location: null, linkedin_url: null, portfolio_github_url: null },
-      total_years_experience: '3+ years',
-      current_or_latest_role: 'Software Professional',
-      current_or_latest_company: null,
-      education: [{ degree: 'Bachelor of Technology / Computer Science', institution: 'University', year: null }],
-      skills: { technical: foundTech.length > 0 ? foundTech : ['Software Development', 'Problem Solving'], soft: ['Communication', 'Teamwork'] },
-      certifications: []
-    },
-    evaluation: {
-      overall_score: overallScore,
-      shortlisted: overallScore >= 7,
-      breakdown: { skills_score: skillsScore, experience_score: expScore, education_score: eduScore, tone_and_relevance_score: toneScore },
-      justification: `Dynamic ATS scan evaluated ${name} with a ${skillsScore}% skills match against requirements.`,
-      ai_summary: `${name} demonstrates proficiency in ${foundTech.slice(0, 3).join(', ')}.`,
-      strengths: foundTech.length > 0 ? [`Matching technical skills: ${foundTech.slice(0, 4).join(', ')}`] : ['Relevant engineering background'],
-      missing_requirements: missingTech.length > 0 ? [`Missing JD technical skills: ${missingTech.join(', ')}`] : ['No major missing requirements flagged'],
-      recruiter_notes: [`Evaluate candidate for target job role requirements.`]
-    }
-  });
-}
-
-// ─── LLM Evaluation ────────────────────────────────────────────────────────
-async function runAI(resumeText: string, jdText: string, role: string, provider: string, apiKey?: string) {
-  const groqKey = apiKey?.startsWith('gsk_') ? apiKey : process.env.GROQ_API_KEY;
-  const geminiKey = apiKey?.startsWith('AIza') ? apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
-  const prompt = `Target Role: ${role}\n\n=== JOB DESCRIPTION ===\n${jdText}\n\n=== RESUME ===\n${resumeText}\n\nReturn JSON only matching the system prompt schema.`;
-
-  // 1. Prioritize Groq Cloud API (Qwen 3.6 27B) - Verified Fast Live LLM
+  // B. IF PROVIDER IS GROQ (DEFAULT) OR GEMINI FALLBACK TO GROQ
   if (groqKey) {
     try {
       console.log('Running Live Groq Cloud LLM evaluation (qwen/qwen3.6-27b)...');
@@ -341,13 +309,14 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
       return { ...processed, provider_used: 'Groq Cloud AI (Qwen-3.6-27B)' };
     } catch (e: any) {
       console.warn('Groq Live LLM call failed:', e.message);
+      lastError = `Groq API Error: ${e.message}`;
     }
   }
 
-  // 2. Try Gemini REST API if valid key starting with AIza is present
-  if (geminiKey && geminiKey.startsWith('AIza')) {
+  // C. SECONDARY FALLBACK TO GEMINI IF GROQ WAS SELECTED BUT FAILED
+  if (geminiKey && provider !== 'gemini') {
     try {
-      console.log('Running Live Gemini REST API evaluation...');
+      console.log('Fallback: Running Live Gemini REST API evaluation...');
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
       const res = await fetch(url, {
         method: 'POST',
@@ -368,14 +337,12 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
         }
       }
     } catch (e: any) {
-      console.warn('Gemini REST API failed:', e.message);
+      lastError = `Gemini API Error: ${e.message}`;
     }
   }
 
-  // 3. Dynamic Real-Time Resume Parser Fallback (Extracts real candidate name, email, phone & tech skills dynamically)
-  console.log('Running Dynamic NLP Resume Parser fallback...');
-  const dynamicResult = dynamicNLPResumeParser(resumeText, jdText);
-  return { ...dynamicResult, provider_used: 'Dynamic NLP Resume Parser (Live Engine)' };
+  // STRICT RULE: THROW EXPLICIT ERROR — NO MOCK / DEFAULT FALLBACK ALLOWED!
+  throw new Error(`Live AI Evaluation Failed: ${lastError || 'Unable to reach Groq or Gemini AI endpoints. Please verify API key.'}`);
 }
 
 // ─── PDF Text Extraction ────────────────────────────────────────────────────

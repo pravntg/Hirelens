@@ -1,0 +1,25 @@
+SARAH CHEN, Ph.D.
+Email: sarah.chen@ai-example.com | Phone: (555) 987-6543 | Seattle, WA
+GitHub: github.com/sarahchen-ai | Scholar: scholar.google.com/citations?user=sarahchen
+
+SUMMARY
+Senior AI/ML Research Engineer with 5 years of industry experience developing Large Language Model (LLM) architectures, Retrieval-Augmented Generation (RAG) pipelines, and deep learning models. Author of 4 peer-reviewed machine learning papers.
+
+EXPERIENCE
+Staff AI Engineer | DeepIntelligence Labs (2022 – Present)
+• Led development of enterprise RAG pipelines combining Llama-3, LangChain, and Qdrant vector database, achieving 92% retrieval accuracy on proprietary domain data.
+• Fine-tuned 7B and 70B parameter open-source LLMs using PyTorch, LoRA, and DeepSpeed across multi-GPU AWS clusters.
+• Built low-latency inference APIs using Python, FastAPI, and vLLM serving 500+ requests per second.
+
+Senior Machine Learning Engineer | DataVision Inc. (2020 – 2022)
+• Trained computer vision and natural language processing models in PyTorch and TensorFlow for automated document parsing.
+• Deployed scalable MLOps pipelines using Kubeflow, MLflow, and Docker on GCP Vertex AI.
+
+EDUCATION
+• Ph.D. in Computer Science (Artificial Intelligence & NLP) | University of Washington (2016 – 2020)
+• B.S. in Applied Mathematics & Computer Science | Stanford University (2012 – 2016)
+
+SKILLS & TECHNOLOGIES
+• AI & ML: PyTorch, TensorFlow, Hugging Face Transformers, LangChain, LlamaIndex, vLLM, DeepSpeed, LoRA/QLoRA
+• Vector DBs: Pinecone, Qdrant, Milvus, ChromaDB
+• Engineering: Python, FastAPI, Docker, Kubernetes, AWS, GCP, CUDA, Git, CI/CD

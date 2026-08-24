@@ -1,0 +1,28 @@
+ALEX RIVERA
+Email: alex.rivera@example.com | Phone: (555) 234-5678 | San Francisco, CA
+GitHub: github.com/alexrivera-dev | LinkedIn: linkedin.com/in/alexrivera-dev
+
+SUMMARY
+Experienced Senior Full Stack Software Engineer with 6+ years of expertise in architecting high-throughput web applications, microservices, and distributed cloud systems. Specialized in TypeScript, React, Node.js, Express, and PostgreSQL/MongoDB.
+
+PROFESSIONAL EXPERIENCE
+Lead Software Engineer | CloudTech Solutions (2022 – Present)
+• Architected and scaled customer-facing microservices serving 2.5M active monthly users using TypeScript, Node.js, Express, and MongoDB.
+• Spearheaded frontend migration from legacy jQuery to React 18 with Tailwind CSS, reducing page load latency by 45%.
+• Implemented automated CI/CD deployment pipelines on AWS (ECS, Lambda, S3, CloudFront) with Docker and Terraform.
+• Mentored a team of 6 junior and mid-level software engineers on clean code practices, testing (Jest/Cypress), and code reviews.
+
+Full Stack Engineer | Nexus Systems Inc. (2019 – 2022)
+• Developed real-time analytics dashboard with React, Redux Toolkit, Node.js, and WebSockets.
+• Designed and optimized relational database schemas in PostgreSQL and MongoDB, improving query performance by 35%.
+• Integrated Stripe payment gateway APIs and OAuth2 authentication handling $10M+ annual transaction volume.
+
+EDUCATION & CERTIFICATIONS
+• Bachelor of Science in Computer Science | University of California, Berkeley (2015 – 2019)
+• AWS Certified Solutions Architect – Associate (2022)
+
+TECHNICAL SKILLS
+• Languages: TypeScript, JavaScript, Python, SQL, HTML5, CSS3
+• Frontend: React.js, Next.js, Redux, Tailwind CSS, Vite, Webpack
+• Backend & Database: Node.js, Express.js, REST APIs, GraphQL, MongoDB, PostgreSQL, Redis
+• DevOps & Tools: Docker, Kubernetes, AWS (S3, ECS, Lambda), Git, CI/CD, Jest, Cypress

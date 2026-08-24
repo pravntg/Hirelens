@@ -1,0 +1,20 @@
+JOB TITLE: Senior Full Stack Engineer
+LOCATION: Remote / San Francisco, CA
+DEPARTMENT: Engineering
+
+ROLE OVERVIEW:
+We are looking for a Senior Full Stack Engineer to lead technical design and implementation across our core web applications and cloud API infrastructure. You will work closely with product management and engineering leaders to deliver robust, high-performance software products.
+
+KEY RESPONSIBILITIES:
+• Design and build responsive frontend user interfaces using TypeScript, React 18, and modern CSS frameworks (Tailwind CSS).
+• Develop scalable backend RESTful APIs and microservices using Node.js, Express, and MongoDB/PostgreSQL.
+• Drive database schema design, indexing, and query optimization for high concurrency.
+• Implement automated unit and integration tests (Jest, Cypress) and participate in continuous deployment (Docker, AWS).
+• Mentor junior engineers and champion clean code standards and peer reviews.
+
+REQUIRED QUALIFICATIONS:
+• 5+ years of software engineering experience building production web applications.
+• Expert proficiency in TypeScript, JavaScript, React.js, and Node.js.
+• Strong experience with MongoDB or PostgreSQL databases.
+• Experience with cloud deployments (AWS / Docker / CI/CD).
+• Bachelor's degree in Computer Science or equivalent practical experience.

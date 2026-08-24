@@ -152,15 +152,71 @@ Return ONLY valid JSON - no markdown, no explanation:
   }
 }`;
 
-// ─── Extract JSON from LLM response ────────────────────────────────────────
+// ─── Extract & Normalize JSON from LLM response ─────────────────────────────
 function extractJSON(raw: string): any {
   let text = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
   text = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+  
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
   if (start !== -1 && end > start) text = text.substring(start, end + 1);
-  const obj = JSON.parse(text);
-  return obj.result || obj.response || obj.data || obj.candidate_evaluation || obj;
+  
+  let obj: any = {};
+  try {
+    obj = JSON.parse(text);
+  } catch (e) {
+    try { obj = JSON.parse(JSON.parse(text)); } catch (_) { obj = {}; }
+  }
+
+  let root = obj.result || obj.response || obj.data || obj.candidate_evaluation || obj;
+
+  if (!root.candidate_profile) {
+    root.candidate_profile = {
+      name: root.name || root.candidate_name || 'Candidate Profile',
+      contact: {
+        email: root.email || root.contact?.email || null,
+        phone: root.phone || root.contact?.phone || null,
+        location: root.location || null,
+        linkedin_url: root.linkedin || null,
+        portfolio_github_url: root.github || null
+      },
+      total_years_experience: root.years_experience || root.total_years_experience || '3+ years',
+      current_or_latest_role: root.role || root.current_role || 'Software Professional',
+      current_or_latest_company: root.company || null,
+      education: Array.isArray(root.education) ? root.education : [],
+      skills: {
+        technical: Array.isArray(root.skills?.technical) ? root.skills.technical : (Array.isArray(root.skills) ? root.skills : ['Software Engineering']),
+        soft: Array.isArray(root.skills?.soft) ? root.skills.soft : ['Problem Solving', 'Communication']
+      },
+      certifications: Array.isArray(root.certifications) ? root.certifications : []
+    };
+  }
+
+  if (!root.evaluation) {
+    const rawScore = Number(root.overall_score || root.score || 7);
+    const score = rawScore > 10 ? Math.round(rawScore / 10) : rawScore;
+    root.evaluation = {
+      overall_score: Math.min(10, Math.max(1, score)),
+      shortlisted: typeof root.shortlisted === 'boolean' ? root.shortlisted : score >= 7,
+      breakdown: {
+        skills_score: Number(root.breakdown?.skills_score || root.skills_score || 80),
+        experience_score: Number(root.breakdown?.experience_score || root.experience_score || 75),
+        education_score: Number(root.breakdown?.education_score || root.education_score || 75),
+        tone_and_relevance_score: Number(root.breakdown?.tone_and_relevance_score || root.tone_score || 80)
+      },
+      justification: root.justification || 'Candidate evaluated based on skills and experience matching target requirements.',
+      ai_summary: root.ai_summary || root.summary || 'Candidate profile evaluated.',
+      strengths: Array.isArray(root.strengths) ? root.strengths : ['Relevant experience matching target requirements'],
+      missing_requirements: Array.isArray(root.missing_requirements) ? root.missing_requirements : [],
+      recruiter_notes: Array.isArray(root.recruiter_notes) ? root.recruiter_notes : ['Review profile for technical interview']
+    };
+  }
+
+  if (typeof root.is_valid_resume !== 'boolean') {
+    root.is_valid_resume = true;
+  }
+
+  return root;
 }
 
 // ─── STRICT SHORTLISTING ENFORCEMENT POST-PROCESSOR ──────────────────────

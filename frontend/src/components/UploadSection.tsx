@@ -99,13 +99,8 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onScreenSuccess })
   return (
     <div className="space-y-10">
       
-      {/* Hero Header with Crimson Glow */}
+      {/* Hero Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <div className="inline-flex items-center space-x-2 bg-[#FF1744]/10 border border-[#FF1744]/30 px-4 py-1.5 rounded-full text-xs font-extrabold text-[#FF5252] shadow-[0_0_12px_rgba(255,23,68,0.3)]">
-          <Zap className="w-3.5 h-3.5 text-[#FF1744]" />
-          <span>Automated Live Crimson AI Resume Matching</span>
-        </div>
-
         <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_0_12px_rgba(255,23,68,0.4)]">
           Compare Candidate Resume & Job Description
         </h1>

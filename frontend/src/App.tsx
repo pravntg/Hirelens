@@ -96,20 +96,21 @@ export const App: React.FC = () => {
         {/* Main Body Canvas */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
-          {/* KPI Stats Overview Bar */}
-          <StatsOverview candidates={candidates} />
-
           {/* Tab Content */}
           {activeTab === 'upload' && (
             <UploadSection onScreenSuccess={handleScreenSuccess} />
           )}
 
           {activeTab === 'candidates' && (
-            <CandidateList
-              candidates={candidates}
-              onSelectCandidate={(cand) => setSelectedCandidate(cand)}
-              onDeleteCandidate={handleDeleteCandidate}
-            />
+            <div className="space-y-8">
+              {/* KPI Stats Overview Bar — Moved to Candidate Pipeline Tab */}
+              <StatsOverview candidates={candidates} />
+              <CandidateList
+                candidates={candidates}
+                onSelectCandidate={(cand) => setSelectedCandidate(cand)}
+                onDeleteCandidate={handleDeleteCandidate}
+              />
+            </div>
           )}
 
           {activeTab === 'jobs' && (

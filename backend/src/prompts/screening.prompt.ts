@@ -14,6 +14,17 @@ If the text is NOT an individual candidate resume (for example: it is a Capstone
 - Set "missing_requirements": ["Valid Individual Candidate Resume/CV document required"]
 - Set "recruiter_notes": ["Reject document: Please upload an individual candidate resume or CV file."]
 
+### STRICT CRITERIA-BASED SHORTLISTING RULES
+A candidate MUST ONLY BE SHORTLISTED ("shortlisted": true) IF AND ONLY IF ALL 4 OF THE FOLLOWING CRITERIA ARE MET:
+1. "is_valid_resume" is true (the document MUST be a real candidate resume/CV).
+2. "overall_score" >= 7 (out of 10).
+3. "skills_score" >= 65 (out of 100). The candidate MUST possess at least 65% of the core technical skills specified in the Job Description.
+4. "experience_score" >= 60 (out of 100). The candidate's past work history and seniority MUST align with the JD requirements.
+
+If ANY of the above 4 criteria are not met:
+- You MUST set "shortlisted": false.
+- Do NOT shortlist candidates with low skill match, missing core skills, or invalid document types.
+
 ### Evaluation Criteria & Scoring Guidelines (For Valid Resumes)
 Evaluate across 4 core dimensions (scale of 0-100 for each):
 1. **Skills Match** (0-100): Tech stack & soft skills overlap.
@@ -21,7 +32,7 @@ Evaluate across 4 core dimensions (scale of 0-100 for each):
 3. **Education & Certification Match** (0-100): Alignment of degree, institution, and industry certs.
 4. **Tone & ATS Relevance** (0-100): Formatting clarity, ATS keyword optimization.
 
-Compute an Overall Match Score (1-10 integer scale) and set "shortlisted" to true if Overall Score >= 7.
+Compute an Overall Match Score (1-10 integer scale) and set "shortlisted" to true ONLY IF all criteria above pass.
 
 ### Target JSON Schema
 Return ONLY valid JSON matching this exact structure (no markdown fences):

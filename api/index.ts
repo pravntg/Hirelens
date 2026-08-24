@@ -163,6 +163,35 @@ function extractJSON(raw: string): any {
   return obj.result || obj.response || obj.data || obj.candidate_evaluation || obj;
 }
 
+// ─── STRICT SHORTLISTING ENFORCEMENT POST-PROCESSOR ──────────────────────
+function enforceStrictShortlistCriteria(data: any): any {
+  if (!data || !data.evaluation) return data;
+
+  const isValid = data.is_valid_resume !== false;
+  const overallScore = data.evaluation.overall_score || 0;
+  const skillsScore = data.evaluation.breakdown?.skills_score || 0;
+  const expScore = data.evaluation.breakdown?.experience_score || 0;
+  const missingCount = Array.isArray(data.evaluation.missing_requirements) ? data.evaluation.missing_requirements.length : 0;
+
+  // STRICT CRITERIA:
+  // Must be valid resume AND overall score >= 7 AND skills_score >= 65 AND experience_score >= 60 AND missing_requirements <= 3
+  const meetsStrictCriteria = isValid && overallScore >= 7 && skillsScore >= 65 && expScore >= 60 && missingCount <= 3;
+
+  data.evaluation.shortlisted = meetsStrictCriteria;
+
+  // If score is 7+ but fails skills/experience threshold, downgrade overall score to 6
+  if (!meetsStrictCriteria && data.evaluation.overall_score >= 7) {
+    data.evaluation.overall_score = 6;
+  }
+
+  if (!isValid) {
+    data.evaluation.overall_score = 1;
+    data.evaluation.shortlisted = false;
+  }
+
+  return data;
+}
+
 // ─── LLM Evaluation ────────────────────────────────────────────────────────
 async function runAI(resumeText: string, jdText: string, role: string, provider: string, apiKey?: string) {
   
@@ -217,7 +246,8 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
         if (text) {
           const parsed = extractJSON(text);
           const validated = Schema.parse(parsed);
-          return { ...validated, provider_used: 'Google Gemini 3.6 Flash (Live LLM)' };
+          const processed = enforceStrictShortlistCriteria(validated);
+          return { ...processed, provider_used: 'Google Gemini 3.6 Flash (Live LLM)' };
         }
       }
     } catch (e: any) { console.warn('Gemini REST API failed:', e.message); }
@@ -233,7 +263,8 @@ async function runAI(resumeText: string, jdText: string, role: string, provider:
         response_format: { type: 'json_object' }, temperature: 0.2
       });
       const result = Schema.parse(extractJSON(r.choices[0]?.message?.content || '{}'));
-      return { ...result, provider_used: 'Groq Cloud AI (Qwen-3.6-27B)' };
+      const processed = enforceStrictShortlistCriteria(result);
+      return { ...processed, provider_used: 'Groq Cloud AI (Qwen-3.6-27B)' };
     } catch (e: any) { console.warn('Groq failed:', e.message); }
   }
 

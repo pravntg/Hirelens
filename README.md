@@ -8,7 +8,7 @@ An enterprise-grade, production-ready **AI-Powered Smart Resume Screener** and m
 
 - **Live Production App**: **[https://resumind-lake-two.vercel.app](https://resumind-lake-two.vercel.app)**
 - **GitHub Repository**: **[https://github.com/pravntg/resumind.git](https://github.com/pravntg/resumind.git)**
-- **🎬 Demo Video**: **[smart_resume_screener_subtitled.mp4](./smart_resume_screener_subtitled.mp4)**
+- **🎬 Demo Video**: **[smart_resume_screener_subtitled.mp4](./demo_video/smart_resume_screener_subtitled.mp4)**
 - **MongoDB Atlas Cluster**: `smart_resume` database (`candidates` collection)
 
 ---

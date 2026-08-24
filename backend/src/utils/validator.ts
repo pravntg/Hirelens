@@ -4,7 +4,7 @@ export const EvaluationSchema = z.object({
   is_valid_resume: z.boolean().default(true),
   invalid_resume_reason: z.string().nullable().default(null),
   candidate_profile: z.object({
-    name: z.string().default('Candidate Name Unspecified'),
+    name: z.union([z.string(), z.null(), z.undefined()]).transform(v => (v && String(v).trim()) ? String(v).trim() : 'Candidate Profile'),
     contact: z.object({
       email: z.string().nullable().default(null),
       phone: z.string().nullable().default(null),
@@ -12,12 +12,12 @@ export const EvaluationSchema = z.object({
       linkedin_url: z.string().nullable().default(null),
       portfolio_github_url: z.string().nullable().default(null),
     }).default({ email: null, phone: null, location: null, linkedin_url: null, portfolio_github_url: null }),
-    total_years_experience: z.union([z.number(), z.string()]).default(0),
+    total_years_experience: z.union([z.number(), z.string(), z.null()]).transform(v => v ?? 0),
     current_or_latest_role: z.string().nullable().default(null),
     current_or_latest_company: z.string().nullable().default(null),
     education: z.array(z.object({
-      degree: z.string().default('Degree Unspecified'),
-      institution: z.string().default('Institution Unspecified'),
+      degree: z.string().nullable().transform(v => v || 'N/A'),
+      institution: z.string().nullable().transform(v => v || 'N/A'),
       year: z.string().nullable().default(null)
     })).default([]),
     skills: z.object({
@@ -26,7 +26,7 @@ export const EvaluationSchema = z.object({
     }).default({ technical: [], soft: [] }),
     certifications: z.array(z.string()).default([])
   }).default({
-    name: 'Candidate Name Unspecified',
+    name: 'Candidate Profile',
     contact: { email: null, phone: null, location: null, linkedin_url: null, portfolio_github_url: null },
     total_years_experience: 0,
     current_or_latest_role: null,
